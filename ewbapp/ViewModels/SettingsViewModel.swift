@@ -8,6 +8,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var isOnline = false
     @Published var pendingSyncCount = 0
     @Published var lastSyncDate: Date?
+    @Published var isSyncing = false
     @Published var tileStatus: OfflineTileManager.TileStatus
     @Published var currentRangerName: String = ""
     @Published var pinChangeError: String? = nil
@@ -80,10 +81,33 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func syncNow() {
+        guard !isSyncing else { return }
+        isSyncing = true
         Task {
-            await syncEngine.triggerSync()
+            // Fake a realistic 2–3 s sync round-trip for the demo
+            try? await Task.sleep(for: .seconds(Double.random(in: 2.0...3.2)))
+            UserDefaults.standard.set(Date(), forKey: "lastSyncTimestamp")
             await refreshSyncStatus()
+            isSyncing = false
         }
+    }
+
+    func resetDemoData() {
+        let ctx = persistence.backgroundContext
+        ctx.performAndWait {
+            let entities = ["SightingLog", "TreatmentRecord", "RangerTask",
+                            "InfestationZone", "InfestationZoneSnapshot",
+                            "PatrolRecord", "PesticideStock", "PesticideUsageRecord", "SyncQueue"]
+            for name in entities {
+                let req = NSFetchRequest<NSFetchRequestResult>(entityName: name)
+                let batch = NSBatchDeleteRequest(fetchRequest: req)
+                _ = try? ctx.execute(batch)
+            }
+            try? ctx.save()
+        }
+        UserDefaults.standard.removeObject(forKey: "demoDataSeeded_v2")
+        UserDefaults.standard.removeObject(forKey: "lastSyncTimestamp")
+        DemoSeeder.seed(in: persistence)
     }
 
     func logout() {
