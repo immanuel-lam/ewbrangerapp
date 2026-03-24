@@ -188,6 +188,8 @@ struct MapContainerView: View {
         let repo = ZoneRepository(persistence: appEnv.persistence)
         Task {
             try? await repo.addSnapshot(to: zone, coordinates: coordinates, area: 0, rangerID: rangerID)
+            // Small pause so the view context merge notification fires before we reload
+            try? await Task.sleep(nanoseconds: 150_000_000)
             await MainActor.run {
                 drawingZone = nil
                 drawVertices = []
