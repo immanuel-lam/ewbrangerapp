@@ -158,16 +158,16 @@ struct DemoSeeder {
             // --------------------------------------------------------
             typealias PD = (ranger: RangerProfile, area: String, daysAgo: Int)
             let patrolSpecs: [PD] = [
-                (alice, "North Creek",    3),
-                (bob,   "Boundary Road",  3),
-                (carol, "Homestead",      4),
-                (alice, "Rocky Point",    7),
-                (bob,   "Station Dam",    7),
-                (carol, "North Creek",   10),
-                (alice, "Mangrove Flat", 14),
-                (bob,   "South Track",   14),
-                (carol, "Eastern Slopes",17),
-                (alice, "Homestead",     21),
+                (alice, "North Beach Dunes",        3),
+                (bob,   "Creek Line East",          3),
+                (carol, "Central Clearing",         4),
+                (alice, "Headland Track",           7),
+                (bob,   "Mangrove Edge",            7),
+                (carol, "North Beach Dunes",       10),
+                (alice, "River Mouth Flats",       14),
+                (bob,   "Airstrip Corridor",       14),
+                (carol, "Camping Ground Perimeter",17),
+                (alice, "Southern Scrub Belt",     21),
             ]
 
             for spec in patrolSpecs {
