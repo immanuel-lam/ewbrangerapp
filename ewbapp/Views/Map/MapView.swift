@@ -11,6 +11,17 @@ final class ZonePolygonOverlay: MKPolygon {
     var zoneStatus: String = "active"
 }
 
+final class DrawPreviewPolyline: MKPolyline {}
+
+final class VertexAnnotation: NSObject, MKAnnotation {
+    var coordinate: CLLocationCoordinate2D
+    var title: String?
+    init(index: Int, coordinate: CLLocationCoordinate2D) {
+        self.coordinate = coordinate
+        self.title = "\(index + 1)"
+    }
+}
+
 struct MapView: UIViewRepresentable {
     var mapType: MKMapType
     var annotations: [SightingAnnotation]
@@ -55,7 +66,7 @@ struct MapView: UIViewRepresentable {
             for zone in zones {
                 let status = zone.status ?? "active"
                 // If zone has a snapshot with polygon coordinates, draw that
-                if let snapshots = zone.snapshots as? [InfestationZoneSnapshot],
+                if let snapshots = zone.snapshots?.array as? [InfestationZoneSnapshot],
                    let latest = snapshots.sorted(by: { ($0.snapshotDate ?? .distantPast) > ($1.snapshotDate ?? .distantPast) }).first,
                    let coords = latest.polygonCoordinates as? [[Double]], coords.count >= 3 {
                     var mkCoords = coords.map { CLLocationCoordinate2D(latitude: $0[0], longitude: $0[1]) }
@@ -83,20 +94,15 @@ struct MapView: UIViewRepresentable {
         }
 
         // Draw mode preview
-        mapView.overlays.filter { ($0 as? MKPolyline)?.title == "__drawPreview__" }.forEach { mapView.removeOverlay($0) }
-        mapView.annotations.filter { ($0 as? MKPointAnnotation)?.title == "__vertex__" }.forEach { mapView.removeAnnotation($0) }
+        mapView.overlays.filter { $0 is DrawPreviewPolyline }.forEach { mapView.removeOverlay($0) }
+        mapView.removeAnnotations(mapView.annotations.compactMap { $0 as? VertexAnnotation })
         if drawVertices.count >= 2 {
             var verts = drawVertices
-            let preview = MKPolyline(coordinates: &verts, count: verts.count)
-            preview.title = "__drawPreview__"
+            let preview = DrawPreviewPolyline(coordinates: &verts, count: verts.count)
             mapView.addOverlay(preview, level: .aboveLabels)
         }
         for (i, vertex) in drawVertices.enumerated() {
-            let pin = MKPointAnnotation()
-            pin.coordinate = vertex
-            pin.title = "__vertex__"
-            pin.subtitle = "\(i + 1)"
-            mapView.addAnnotation(pin)
+            mapView.addAnnotation(VertexAnnotation(index: i, coordinate: vertex))
         }
 
         // Sighting annotations
@@ -149,10 +155,10 @@ struct MapView: UIViewRepresentable {
                 view.canShowCallout = true
                 return view
             }
-            if let vertex = annotation as? MKPointAnnotation, vertex.title == "__vertex__" {
-                let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "vertex")
+            if let vertex = annotation as? VertexAnnotation {
+                let view = MKMarkerAnnotationView(annotation: vertex, reuseIdentifier: "vertex")
                 view.markerTintColor = .systemYellow
-                view.glyphText = vertex.subtitle
+                view.glyphText = vertex.title
                 view.canShowCallout = false
                 return view
             }
@@ -178,7 +184,7 @@ struct MapView: UIViewRepresentable {
                 applyZoneStyle(to: renderer, status: zonePolygon.zoneStatus)
                 return renderer
             }
-            if let polyline = overlay as? MKPolyline, polyline.title == "__drawPreview__" {
+            if let polyline = overlay as? DrawPreviewPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
                 renderer.strokeColor = UIColor.systemYellow
                 renderer.lineWidth = 2
