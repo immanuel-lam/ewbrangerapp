@@ -49,7 +49,7 @@ final class LocationManager: NSObject, ObservableObject {
     }
 
     /// Captures a single high-accuracy location, then stops.
-    /// Falls back to Port Stewart default after 8 seconds (handles simulator + poor signal).
+    /// Falls back to Port Stewart default after 5 seconds (handles simulator + poor signal).
     func captureLocation() async -> CLLocation? {
         if locationManager.authorizationStatus == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
@@ -64,7 +64,7 @@ final class LocationManager: NSObject, ObservableObject {
             }
             locationManager.startUpdatingLocation()
             // Timeout fallback
-            DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
                 guard let self, !resumed else { return }
                 resumed = true
                 self.isSingleCapture = false

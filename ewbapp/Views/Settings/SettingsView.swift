@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var showEditName = false
     @State private var showChangePIN = false
     @State private var editedName = ""
+    @State private var showResetConfirm = false
 
     init() {
         _viewModel = StateObject(wrappedValue: SettingsViewModel(
@@ -50,8 +51,19 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    Button("Sync Now") { viewModel.syncNow() }
-                        .foregroundColor(.blue)
+                    Button {
+                        viewModel.syncNow()
+                    } label: {
+                        HStack {
+                            Text("Sync Now")
+                            if viewModel.isSyncing {
+                                Spacer()
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(viewModel.isSyncing)
                 }
 
                 // Seasonal
@@ -97,8 +109,25 @@ struct SettingsView: View {
                         viewModel.logout()
                     }
                 }
+
+                Section {
+                    Button("Reset App Data") { showResetConfirm = true }
+                        .foregroundColor(.secondary)
+                        .font(.footnote)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
             }
             .navigationTitle("Settings")
+            .confirmationDialog(
+                "Reset App Data",
+                isPresented: $showResetConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Reset All Data", role: .destructive) { viewModel.resetDemoData() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will delete all sightings, zones, patrols, and tasks, then restore the original demo data.")
+            }
             .alert("Edit Name", isPresented: $showEditName) {
                 TextField("Display name", text: $editedName)
                 Button("Save") { viewModel.updateDisplayName(editedName) }
