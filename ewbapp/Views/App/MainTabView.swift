@@ -53,7 +53,7 @@ struct MoreView: View {
                     }
                 }
                 Section("Device") {
-                    NavigationLink(destination: MeshSyncView()) {
+                    NavigationLink(destination: DemoMeshSyncView()) {
                         Label("End of Day Sync", systemImage: "antenna.radiowaves.left.and.right")
                     }
                     NavigationLink(destination: SettingsView()) {
