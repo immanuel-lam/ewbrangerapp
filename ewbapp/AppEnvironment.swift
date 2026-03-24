@@ -48,6 +48,9 @@ final class AppEnvironment: ObservableObject {
             }
         }
 
+        // Seed rich demo data (idempotent — runs once, guarded by UserDefaults flag)
+        DemoSeeder.seed(in: persistence)
+
         // Validate restored session: if the stored rangerID no longer exists in CoreData
         // (e.g. app data was cleared but Keychain wasn't), force re-login.
         if let rangerID = authManager.currentRangerID {
