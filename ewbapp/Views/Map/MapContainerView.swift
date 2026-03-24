@@ -132,14 +132,37 @@ struct MapContainerView: View {
 
                     VStack {
                         HStack {
-                            Spacer()
-                            Picker("Map", selection: $viewModel.mapType) {
-                                Text("Satellite").tag(MKMapType.satellite)
-                                Text("Hybrid").tag(MKMapType.hybrid)
-                                Text("Standard").tag(MKMapType.standard)
+                            Menu {
+                                Button {
+                                    viewModel.mapType = .satellite
+                                } label: {
+                                    Label("Satellite", systemImage: viewModel.mapType == .satellite ? "checkmark" : "globe")
+                                }
+                                Button {
+                                    viewModel.mapType = .hybrid
+                                } label: {
+                                    Label("Hybrid", systemImage: viewModel.mapType == .hybrid ? "checkmark" : "globe")
+                                }
+                                Button {
+                                    viewModel.mapType = .standard
+                                } label: {
+                                    Label("Standard", systemImage: viewModel.mapType == .standard ? "checkmark" : "map")
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "map")
+                                    Text(mapTypeLabel)
+                                        .font(.caption.bold())
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(8)
                             }
-                            .pickerStyle(.segmented).frame(width: 230).padding()
+                            .padding(.leading)
+                            Spacer()
                         }
+                        .padding(.top, 8)
                         Spacer()
                     }
 
@@ -203,6 +226,14 @@ struct MapContainerView: View {
             }
         }
         .onAppear { viewModel.load() }
+    }
+
+    private var mapTypeLabel: String {
+        switch viewModel.mapType {
+        case .hybrid: return "Hybrid"
+        case .standard: return "Standard"
+        default: return "Satellite"
+        }
     }
 
     private func statusLabel(_ status: String?) -> String {
