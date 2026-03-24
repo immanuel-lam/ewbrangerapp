@@ -6,7 +6,7 @@ import UIKit
 struct DemoSeeder {
 
     static func seed(in persistence: PersistenceController) {
-        guard !UserDefaults.standard.bool(forKey: "demoDataSeeded") else { return }
+        guard !UserDefaults.standard.bool(forKey: "demoDataSeeded_v2") else { return }
 
         let variantPhotos = seedPhotos()
         let ctx = persistence.backgroundContext
@@ -60,38 +60,46 @@ struct DemoSeeder {
 
             // --------------------------------------------------------
             // SIGHTINGS  (28 entries spread over 6 months)
+            // All offsets satisfy |latOff|+|lonOff| <= 0.002 so every pin
+            // sits clearly inside its zone's diamond polygon (radius d=0.003).
             // --------------------------------------------------------
             typealias SD = (ranger: RangerProfile, variant: String, size: String,
                             lat: Double, lon: Double, daysAgo: Int, zoneIdx: Int?)
             let sightingSpecs: [SD] = [
-                (alice, "pink",         "large",  -14.685, 143.712, 168, 0),
-                (bob,   "red",          "medium", -14.718, 143.698, 162, 1),
-                (carol, "pinkEdgedRed", "small",  -14.703, 143.722, 155, 2),
-                (alice, "pink",         "medium", -14.695, 143.683, 148, 3),
-                (bob,   "white",        "small",  -14.725, 143.715, 141, 4),
-                (carol, "pink",         "large",  -14.686, 143.714, 134, 0),
-                (alice, "red",          "large",  -14.719, 143.700, 127, 1),
-                (bob,   "orange",       "medium", -14.696, 143.684, 120, 3),
-                (carol, "pink",         "small",  -14.710, 143.730, 113, 5),
-                (alice, "pinkEdgedRed", "medium", -14.704, 143.724, 106, 2),
-                (bob,   "pink",         "large",  -14.687, 143.711,  99, 0),
-                (carol, "red",          "medium", -14.720, 143.697,  92, 1),
-                (alice, "white",        "small",  -14.726, 143.716,  85, 4),
-                (bob,   "pink",         "medium", -14.697, 143.682,  78, 3),
-                (carol, "orange",       "large",  -14.711, 143.731,  71, 5),
-                (alice, "pink",         "small",  -14.688, 143.713,  64, 0),
-                (bob,   "pinkEdgedRed", "medium", -14.705, 143.723,  57, 2),
-                (carol, "red",          "large",  -14.721, 143.699,  50, 1),
-                (alice, "pink",         "medium", -14.698, 143.681,  43, 3),
-                (bob,   "white",        "small",  -14.727, 143.717,  36, 4),
-                (carol, "pink",         "large",  -14.712, 143.729,  29, 5),
-                (alice, "orange",       "medium", -14.689, 143.710,  22, 0),
-                (bob,   "pink",         "small",  -14.706, 143.725,  18, 2),
-                (carol, "red",          "medium", -14.722, 143.696,  14, 1),
-                (alice, "pink",         "large",  -14.699, 143.680,  10, 3),
-                (bob,   "pinkEdgedRed", "medium", -14.728, 143.718,   7, 4),
-                (carol, "pink",         "small",  -14.713, 143.728,   4, 5),
-                (alice, "red",          "medium", -14.690, 143.709,   2, 0),
+                // Zone 0 — North Creek Gully   centroid (-14.685, 143.712)
+                (alice, "pink",         "large",  -14.685,  143.712,  168, 0),
+                (carol, "pink",         "large",  -14.684,  143.713,  134, 0),
+                (bob,   "pink",         "large",  -14.686,  143.713,   99, 0),
+                (alice, "pink",         "small",  -14.684,  143.711,   64, 0),
+                (alice, "orange",       "medium", -14.686,  143.711,   22, 0),
+                (alice, "red",          "medium", -14.685,  143.7135,   2, 0),
+                // Zone 1 — Boundary Road East  centroid (-14.718, 143.698)
+                (bob,   "red",          "medium", -14.718,  143.698,  162, 1),
+                (alice, "red",          "large",  -14.717,  143.699,  127, 1),
+                (carol, "red",          "medium", -14.719,  143.699,   92, 1),
+                (carol, "red",          "large",  -14.717,  143.697,   50, 1),
+                (carol, "red",          "medium", -14.719,  143.697,   14, 1),
+                // Zone 2 — Homestead Track     centroid (-14.703, 143.722)
+                (carol, "pinkEdgedRed", "small",  -14.703,  143.722,  155, 2),
+                (alice, "pinkEdgedRed", "medium", -14.702,  143.7225, 106, 2),
+                (bob,   "pinkEdgedRed", "medium", -14.704,  143.7225,  57, 2),
+                (bob,   "pink",         "small",  -14.703,  143.721,   18, 2),
+                // Zone 3 — Rocky Point Scrub   centroid (-14.695, 143.683)
+                (alice, "pink",         "medium", -14.695,  143.683,  148, 3),
+                (bob,   "orange",       "medium", -14.694,  143.684,  120, 3),
+                (bob,   "pink",         "medium", -14.696,  143.6825,  78, 3),
+                (alice, "pink",         "medium", -14.6945, 143.682,   43, 3),
+                (alice, "pink",         "large",  -14.6955, 143.684,   10, 3),
+                // Zone 4 — Mangrove Flat       centroid (-14.725, 143.715)
+                (bob,   "white",        "small",  -14.725,  143.715,  141, 4),
+                (alice, "white",        "small",  -14.724,  143.7155,  85, 4),
+                (bob,   "white",        "small",  -14.726,  143.7145,  36, 4),
+                (bob,   "pinkEdgedRed", "medium", -14.7245, 143.714,    7, 4),
+                // Zone 5 — Station Dam         centroid (-14.710, 143.730)
+                (carol, "pink",         "small",  -14.710,  143.730,  113, 5),
+                (carol, "orange",       "large",  -14.709,  143.731,   71, 5),
+                (carol, "pink",         "large",  -14.711,  143.729,   29, 5),
+                (carol, "pink",         "small",  -14.709,  143.729,    4, 5),
             ]
 
             var sightings: [SightingLog] = []
@@ -260,7 +268,7 @@ struct DemoSeeder {
 
         // Fake a recent cloud sync so the dashboard & settings show "synced"
         UserDefaults.standard.set(Date().addingTimeInterval(-3_600), forKey: "lastSyncTimestamp")
-        UserDefaults.standard.set(true, forKey: "demoDataSeeded")
+        UserDefaults.standard.set(true, forKey: "demoDataSeeded_v2")
     }
 
     // MARK: - Photo helpers
