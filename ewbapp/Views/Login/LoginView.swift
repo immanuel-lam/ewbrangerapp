@@ -57,7 +57,7 @@ struct LoginView: View {
                                     .font(.system(size: 26, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
                                     .shadow(color: .black.opacity(0.5), radius: 4)
-                                Text("Lantana Monitoring & Control")
+                                Text("Yintjingga Aboriginal Corporation")
                                     .font(.subheadline)
                                     .foregroundStyle(.white.opacity(0.75))
                                     .shadow(color: .black.opacity(0.4), radius: 2)
