@@ -34,11 +34,6 @@ struct AddZoneView: View {
                     }
                 }
 
-                Section {
-                    Text("Polygon drawing is coming in V2. For now, zones are tracked by name and status — you can link sightings to them later.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
             .navigationTitle("Add Zone")
             .navigationBarTitleDisplayMode(.inline)

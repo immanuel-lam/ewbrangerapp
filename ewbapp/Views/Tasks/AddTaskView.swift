@@ -10,6 +10,8 @@ struct AddTaskView: View {
     @State private var hasDueDate = false
     @State private var dueDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
     @State private var isSaving = false
+    @State private var rangers: [RangerProfile] = []
+    @State private var selectedRangerID: UUID? = nil
 
     var body: some View {
         NavigationStack {
@@ -37,9 +39,24 @@ struct AddTaskView: View {
                         DatePicker("Due", selection: $dueDate, displayedComponents: .date)
                     }
                 }
+
+                if !rangers.isEmpty {
+                    Section("Assign To") {
+                        Picker("Ranger", selection: $selectedRangerID) {
+                            ForEach(rangers) { ranger in
+                                Text(ranger.displayName ?? "Unknown")
+                                    .tag(Optional(ranger.id))
+                            }
+                        }
+                    }
+                }
             }
             .navigationTitle("New Task")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                rangers = (try? appEnv.persistence.mainContext.fetchAll(RangerProfile.self)) ?? []
+                selectedRangerID = appEnv.authManager.currentRangerID
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -53,7 +70,7 @@ struct AddTaskView: View {
     }
 
     private func save() {
-        guard let rangerID = appEnv.authManager.currentRangerID else { return }
+        guard let rangerID = selectedRangerID ?? appEnv.authManager.currentRangerID else { return }
         isSaving = true
         let repo = TaskRepository(persistence: appEnv.persistence)
         Task {

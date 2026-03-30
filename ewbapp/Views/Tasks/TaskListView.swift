@@ -131,6 +131,12 @@ struct TaskRow: View {
                             .foregroundColor(isOverdue ? .red : .secondary)
                     }
 
+                    if let name = task.assignedRanger?.displayName {
+                        Label(name, systemImage: "person.circle")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
                     if task.sourceTreatment != nil {
                         Label("Auto", systemImage: "wand.and.stars")
                             .font(.caption)

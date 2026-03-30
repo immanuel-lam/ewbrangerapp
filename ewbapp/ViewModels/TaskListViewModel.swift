@@ -17,7 +17,8 @@ final class TaskListViewModel: ObservableObject {
     }
 
     func load() {
-        tasks = (try? repository.fetchAllTasks(rangerID: rangerID)) ?? []
+        // Show all team tasks — each ranger sees the full shared task list after sync.
+        tasks = (try? repository.fetchAllTasks()) ?? []
     }
 
     var displayed: [RangerTask] {

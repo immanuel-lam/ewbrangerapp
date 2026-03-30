@@ -15,6 +15,8 @@ struct DemoMeshSyncView: View {
     @State private var peer2Status = "Waiting…"
     @State private var showPeers = false
     @State private var summary: String? = nil
+    @State private var pendingTaskCount: Int = 0
+    @State private var totalTaskCount: Int = 0
 
     /// The two rangers who are NOT the currently logged-in ranger.
     private var peers: [String] {
@@ -123,8 +125,15 @@ struct DemoMeshSyncView: View {
         }
     }
 
-    // MARK: - Fake animation
+    // MARK: - Fake animation + real task sync
+
     private func runFakeSync() {
+        // Snapshot counts before the animation so the summary shows real numbers.
+        let ctx = appEnv.persistence.mainContext
+        let allTasks = (try? ctx.fetchAll(RangerTask.self)) ?? []
+        totalTaskCount = allTasks.count
+        pendingTaskCount = allTasks.filter { $0.syncStatus != SyncStatus.synced.rawValue }.count
+
         withAnimation { phase = .discovering; showPeers = false }
         peer1Progress = 0; peer2Progress = 0
         peer1Status = "Waiting…"; peer2Status = "Waiting…"
@@ -137,8 +146,8 @@ struct DemoMeshSyncView: View {
         after(1.8) { peer2Status = "Connecting…" }
         after(2.6) {
             phase = .syncing
-            peer1Status = "Syncing…"
-            peer2Status = "Syncing…"
+            peer1Status = "Syncing tasks…"
+            peer2Status = "Syncing tasks…"
         }
 
         let p1Ticks: [(Double, Double)] = [
@@ -157,13 +166,31 @@ struct DemoMeshSyncView: View {
             after(delay) { withAnimation(.linear(duration: 0.25)) { peer2Progress = value } }
         }
 
-        after(4.8) { peer1Status = "Complete — 14 sent · 9 received" }
-        after(5.1) { peer2Status = "Complete — 14 sent · 6 received" }
+        let half = (pendingTaskCount + 1) / 2
+        after(4.8) { peer1Status = "Complete — \(half) tasks synced" }
+        after(5.1) { peer2Status = "Complete — \(pendingTaskCount - half) tasks synced" }
         after(5.4) {
+            // Actually mark all pending tasks as synced in CoreData.
+            flushPendingTasks()
             withAnimation {
                 phase   = .done
-                summary = "Sync complete. 3 rangers up to date.\n28 records · 0 conflicts"
+                summary = "Sync complete. 3 rangers up to date.\n\(totalTaskCount) tasks · 0 conflicts"
             }
+        }
+    }
+
+    /// Marks every RangerTask with a non-synced status as synced.
+    /// This is what makes task changes visible across rangers after the demo sync.
+    private func flushPendingTasks() {
+        let bgCtx = appEnv.persistence.backgroundContext
+        bgCtx.perform {
+            let pred = NSPredicate(format: "syncStatus != %d", SyncStatus.synced.rawValue)
+            guard let pending = try? bgCtx.fetchAll(RangerTask.self, predicate: pred),
+                  !pending.isEmpty else { return }
+            for task in pending {
+                task.syncStatus = SyncStatus.synced.rawValue
+            }
+            try? bgCtx.save()
         }
     }
 
