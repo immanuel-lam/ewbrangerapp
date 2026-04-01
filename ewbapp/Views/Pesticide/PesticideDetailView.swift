@@ -49,7 +49,10 @@ struct PesticideDetailView: View {
         }
         .navigationTitle(stock.productName ?? "Product")
         .sheet(isPresented: $showLogUsage, onDismiss: { viewModel.load() }) {
-            LogUsageView(stock: stock, viewModel: viewModel, rangerID: appEnv.authManager.currentRangerID ?? UUID())
+            LogUsageView(stock: stock, viewModel: viewModel, rangerID: appEnv.authManager.currentRangerID ?? {
+                assertionFailure("PesticideDetailView accessed without authenticated ranger")
+                return UUID()
+            }())
         }
     }
 }

@@ -6,9 +6,13 @@ struct PatrolView: View {
     @State private var historyTab = 0 // 0 = List, 1 = Calendar
 
     init() {
+        let rangerID = AppEnvironment.shared.authManager.currentRangerID ?? {
+            assertionFailure("PatrolView accessed without authenticated ranger")
+            return UUID()
+        }()
         _viewModel = StateObject(wrappedValue: PatrolViewModel(
             persistence: AppEnvironment.shared.persistence,
-            rangerID: AppEnvironment.shared.authManager.currentRangerID ?? UUID()
+            rangerID: rangerID
         ))
     }
 

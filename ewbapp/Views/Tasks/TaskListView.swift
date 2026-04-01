@@ -7,9 +7,13 @@ struct TaskListView: View {
     @State private var editingTask: RangerTask?
 
     init() {
+        let rangerID = AppEnvironment.shared.authManager.currentRangerID ?? {
+            assertionFailure("TaskListView accessed without authenticated ranger")
+            return UUID()
+        }()
         _viewModel = StateObject(wrappedValue: TaskListViewModel(
             persistence: AppEnvironment.shared.persistence,
-            rangerID: AppEnvironment.shared.authManager.currentRangerID ?? UUID()
+            rangerID: rangerID
         ))
     }
 
