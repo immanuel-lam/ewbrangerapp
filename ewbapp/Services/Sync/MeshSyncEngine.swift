@@ -214,6 +214,7 @@ extension MeshSyncEngine: MCSessionDelegate {
                                     "method": t.method ?? "", "herbicideProduct": t.herbicideProduct ?? "",
                                     "outcomeNotes": t.outcomeNotes ?? "",
                                     "treatmentDate": t.treatmentDate?.iso8601String ?? "",
+                                    "createdAt": t.createdAt?.iso8601String ?? "",
                                     "updatedAt": t.updatedAt?.iso8601String ?? "",
                                     "sightingID": t.sighting?.id?.uuidString ?? ""])
                 } else if let task = try? context.fetchFirst(RangerTask.self, predicate: pred) {
@@ -222,6 +223,7 @@ extension MeshSyncEngine: MCSessionDelegate {
                                     "priority": task.priority ?? "medium",
                                     "isComplete": task.isComplete,
                                     "dueDate": task.dueDate?.iso8601String ?? "",
+                                    "createdAt": task.createdAt?.iso8601String ?? "",
                                     "updatedAt": task.updatedAt?.iso8601String ?? ""])
                 }
             }
@@ -263,7 +265,7 @@ extension MeshSyncEngine: MCSessionDelegate {
                         log.notes = record["notes"] as? String
                         log.createdAt = DateFormatter.iso8601Full.date(from: record["createdAt"] as? String ?? "")
                         log.updatedAt = incoming
-                        log.syncStatus = SyncStatus.pendingCreate.rawValue
+                        log.syncStatus = SyncStatus.synced.rawValue
                     }
                 case "TreatmentRecord":
                     if let existing = try? context.fetchFirst(TreatmentRecord.self, predicate: pred) {
@@ -280,8 +282,9 @@ extension MeshSyncEngine: MCSessionDelegate {
                         t.herbicideProduct = record["herbicideProduct"] as? String
                         t.outcomeNotes = record["outcomeNotes"] as? String
                         t.treatmentDate = DateFormatter.iso8601Full.date(from: record["treatmentDate"] as? String ?? "")
+                        t.createdAt = DateFormatter.iso8601Full.date(from: record["createdAt"] as? String ?? "") ?? Date()
                         t.updatedAt = incoming
-                        t.syncStatus = SyncStatus.pendingCreate.rawValue
+                        t.syncStatus = SyncStatus.synced.rawValue
                         // Link sighting if present
                         if let sID = UUID(uuidString: record["sightingID"] as? String ?? ""),
                            let sighting = try? context.fetchFirst(SightingLog.self, predicate: NSPredicate(format: "id == %@", sID as CVarArg)) {
@@ -307,15 +310,19 @@ extension MeshSyncEngine: MCSessionDelegate {
                         if let dueDateStr = record["dueDate"] as? String, !dueDateStr.isEmpty {
                             task.dueDate = DateFormatter.iso8601Full.date(from: dueDateStr)
                         }
-                        task.createdAt = Date()
+                        task.createdAt = DateFormatter.iso8601Full.date(from: record["createdAt"] as? String ?? "") ?? Date()
                         task.updatedAt = incoming
-                        task.syncStatus = SyncStatus.pendingCreate.rawValue
+                        task.syncStatus = SyncStatus.synced.rawValue
                     }
                 default:
                     break
                 }
             }
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                print("[MeshSyncEngine] Failed to save received records: \(error)")
+            }
         }
     }
 }
