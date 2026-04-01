@@ -19,6 +19,7 @@ final class MeshSyncViewModel: ObservableObject {
     }
 
     func startDiscovery() {
+        guard !isSyncing else { return }
         Task {
             await meshEngine.start()
             isSyncing = true
@@ -27,6 +28,7 @@ final class MeshSyncViewModel: ObservableObject {
     }
 
     func stopDiscovery() {
+        guard isSyncing else { return }
         Task {
             await meshEngine.stop()
             isSyncing = false
