@@ -17,7 +17,7 @@ final class PersistenceController {
         return context
     }()
 
-    private init(inMemory: Bool = false) {
+    init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "LamaLamaRangers")
 
         if inMemory {

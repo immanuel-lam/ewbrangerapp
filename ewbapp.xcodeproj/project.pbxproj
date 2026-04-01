@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		AA000001AAAA000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 23857F1E2F721375001DD5DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 23857F252F721375001DD5DA;
+			remoteInfo = ewbapp;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		23857F262F721375001DD5DA /* ewbapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ewbapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000002AAAA000000000002 /* ewbappTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ewbappTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = ewbapp;
 			sourceTree = "<group>";
 		};
+		AA000003AAAA000000000003 /* ewbappTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ewbappTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		23857F232F721375001DD5DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000004AAAA000000000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				23857F282F721375001DD5DA /* ewbapp */,
+				AA000003AAAA000000000003 /* ewbappTests */,
 				23857F272F721375001DD5DA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				23857F262F721375001DD5DA /* ewbapp.app */,
+				AA000002AAAA000000000002 /* ewbappTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 23857F262F721375001DD5DA /* ewbapp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AA000005AAAA000000000005 /* ewbappTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA00000CAAAA00000000000C /* Build configuration list for PBXNativeTarget "ewbappTests" */;
+			buildPhases = (
+				AA000006AAAA000000000006 /* Sources */,
+				AA000004AAAA000000000004 /* Frameworks */,
+				AA000007AAAA000000000007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA000008AAAA000000000008 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA000003AAAA000000000003 /* ewbappTests */,
+			);
+			name = ewbappTests;
+			packageProductDependencies = (
+			);
+			productName = ewbappTests;
+			productReference = AA000002AAAA000000000002 /* ewbappTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					23857F252F721375001DD5DA = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					AA000005AAAA000000000005 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 23857F252F721375001DD5DA;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				23857F252F721375001DD5DA /* ewbapp */,
+				AA000005AAAA000000000005 /* ewbappTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		23857F242F721375001DD5DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000007AAAA000000000007 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA000006AAAA000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA000008AAAA000000000008 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 23857F252F721375001DD5DA /* ewbapp */;
+			targetProxy = AA000001AAAA000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		23857F2F2F721376001DD5DA /* Debug */ = {
@@ -306,6 +381,60 @@
 			};
 			name = Release;
 		};
+		AA000009AAAA000000000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6NX7WN475L;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.immanuel.ewbapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ewbapp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ewbapp";
+			};
+			name = Debug;
+		};
+		AA00000AAAAA00000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6NX7WN475L;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.immanuel.ewbapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ewbapp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ewbapp";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -323,6 +452,15 @@
 			buildConfigurations = (
 				23857F322F721376001DD5DA /* Debug */,
 				23857F332F721376001DD5DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA00000CAAAA00000000000C /* Build configuration list for PBXNativeTarget "ewbappTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000009AAAA000000000009 /* Debug */,
+				AA00000AAAAA00000000000A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
