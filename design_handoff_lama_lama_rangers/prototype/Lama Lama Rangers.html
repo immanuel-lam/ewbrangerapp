@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lama Lama Rangers</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #1F1A10; font-family: -apple-system, system-ui, sans-serif; }
+  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
+  *::-webkit-scrollbar { display: none; }
+  #app { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tokens.jsx"></script>
+<script type="text/babel" src="atoms.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="screens/login.jsx"></script>
+<script type="text/babel" src="screens/dashboard.jsx"></script>
+<script type="text/babel" src="screens/map.jsx"></script>
+<script type="text/babel" src="screens/sightings.jsx"></script>
+<script type="text/babel" src="screens/guide.jsx"></script>
+<script type="text/babel" src="screens/ops.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "startScreen": "login",
+  "darkSunlight": false,
+  "showAllScreens": false
+}/*EDITMODE-END*/;
+
+function App() {
+  const persist = (() => {
+    try { return JSON.parse(localStorage.getItem('ll_state') || 'null') || {}; } catch { return {}; }
+  })();
+
+  const [ranger, setRanger] = React.useState(persist.ranger || null);
+  // Route = { tab, modal?, stack: [...] }
+  const [tab, setTab] = React.useState(persist.tab || 'map');
+  const [stack, setStack] = React.useState(persist.stack || []); // e.g. ['detail:s01']
+  const [logOpen, setLogOpen] = React.useState(false);
+  const [sightings, setSightings] = React.useState(SEED_SIGHTINGS);
+  const [toast, setToast] = React.useState(null);
+  const [tweaksOn, setTweaksOn] = React.useState(false);
+
+  React.useEffect(() => {
+    localStorage.setItem('ll_state', JSON.stringify({ ranger, tab, stack }));
+  }, [ranger, tab, stack]);
+
+  // Tweaks protocol
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOn(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOn(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const top = stack[stack.length - 1];
+  const push = (s) => setStack(v => [...v, s]);
+  const pop = () => setStack(v => v.slice(0, -1));
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
+
+  const openSighting = (id) => push('detail:' + id);
+  const openVariant = (id) => push('variant:' + id);
+  const submitSighting = ({ variant, size, notes }) => {
+    const r = RANGERS.find(x => x.name === ranger.name) || RANGERS[0];
+    const s = { id: 'new' + Date.now(), variant, ranger: r.id, when: 'just now',
+                zone: 'Running Creek', size, sync: 'pending',
+                lat: -14.4912, lng: 143.7204, notes };
+    setSightings(prev => [s, ...prev]);
+    setLogOpen(false);
+    showToast('Saved locally — will sync later');
+  };
+
+  let screen;
+  if (!ranger) {
+    screen = <LoginScreen onLogin={(r) => setRanger(r)}/>;
+  } else if (top && top.startsWith('detail:')) {
+    screen = <SightingDetailScreen id={top.split(':')[1]} onBack={pop}/>;
+  } else if (top && top.startsWith('variant:')) {
+    screen = <VariantDetailScreen id={top.split(':')[1]} onBack={pop}/>;
+  } else if (top === 'sync') {
+    screen = <MeshSyncScreen onBack={pop}/>;
+  } else if (top === 'tasks') {
+    screen = <TasksScreen onBack={pop}/>;
+  } else if (top === 'inventory') {
+    screen = <InventoryScreen onBack={pop}/>;
+  } else {
+    switch (tab) {
+      case 'map':       screen = <MapScreen onLogSighting={() => setLogOpen(true)} onOpenSighting={openSighting}/>; break;
+      case 'sightings': screen = <SightingsListScreen sightings={sightings} onOpen={openSighting}/>; break;
+      case 'patrol':    screen = <PatrolScreen ranger={ranger}/>; break;
+      case 'guide':     screen = <GuideScreen onOpenVariant={openVariant}/>; break;
+      case 'more':      screen = <MoreScreen ranger={ranger} onGoto={(id) => { if (id === 'detail') setTab('sightings'); else push(id); }} onLogout={() => { setRanger(null); setStack([]); setTab('map'); }}/>; break;
+      default: screen = <DashboardScreen ranger={ranger} onOpenSighting={openSighting} onGoto={(t) => { if (t === 'tasks') push('tasks'); else setTab(t); }}/>;
+    }
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Phone>
+          <div style={{ position: 'relative', height: '100%', overflow: 'hidden', background: T.paper }}>
+            {screen}
+            {ranger && !top && <TabBar tab={tab} setTab={setTab}/>}
+            <LogSightingSheet open={logOpen} onClose={() => setLogOpen(false)} ranger={ranger} onSubmit={submitSighting}/>
+            {/* Toast */}
+            {toast && (
+              <div style={{ position: 'absolute', top: 70, left: 16, right: 16, zIndex: 90, background: T.eucDark, color: '#FFF8EE', padding: '12px 14px', borderRadius: 14, fontFamily: LLFONT, fontSize: 13, textAlign: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', animation: 'llFade 0.2s ease' }}>
+                {toast}
+              </div>
+            )}
+          </div>
+        </Phone>
+      </div>
+
+      {/* Tweaks panel */}
+      {tweaksOn && (
+        <div style={{ position: 'fixed', right: 16, bottom: 16, width: 260, background: '#FFFBF2', border: '1px solid rgba(58,50,32,0.18)', borderRadius: 14, padding: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.35)', zIndex: 999, fontFamily: LLFONT }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontFamily: LLFONTD, fontWeight: 700, fontSize: 14, color: T.ink }}>Tweaks</div>
+            <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, color: T.ink3 }}>LLR · demo</div>
+          </div>
+          <TweakRow label="Jump to screen">
+            <select defaultValue="" onChange={e => {
+              const v = e.target.value; if (!v) return;
+              if (v === 'login') { setRanger(null); setStack([]); return; }
+              if (!ranger) setRanger(RANGERS[0]);
+              setStack([]);
+              if (['sync','tasks','inventory'].includes(v)) { push(v); return; }
+              if (v.startsWith('variant:')) { push(v); return; }
+              setTab(v);
+            }} style={tweakSelect}>
+              <option value="">Pick…</option>
+              <optgroup label="Entry">
+                <option value="login">1 · Login</option>
+                <option value="dashboard">2 · Dashboard</option>
+              </optgroup>
+              <optgroup label="Tabs">
+                <option value="map">3 · Map</option>
+                <option value="sightings">5 · Sightings</option>
+                <option value="patrol">10 · Patrol</option>
+                <option value="guide">7 · Guide</option>
+              </optgroup>
+              <optgroup label="Stack">
+                <option value="tasks">9 · Tasks</option>
+                <option value="inventory">8 · Inventory</option>
+                <option value="sync">11 · Mesh sync</option>
+                <option value="variant:pink">7b · Variant detail</option>
+              </optgroup>
+            </select>
+          </TweakRow>
+          <TweakRow label="Log new sighting">
+            <button onClick={() => { if (!ranger) setRanger(RANGERS[0]); setLogOpen(true); }} style={tweakBtn}>Open sheet</button>
+          </TweakRow>
+          <TweakRow label="Reset demo">
+            <button onClick={() => { localStorage.removeItem('ll_state'); setRanger(null); setStack([]); setTab('map'); setSightings(SEED_SIGHTINGS); }} style={tweakBtn}>Start over</button>
+          </TweakRow>
+        </div>
+      )}
+    </>
+  );
+}
+
+function TweakRow({ label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+      <div style={{ fontSize: 10, color: '#6B5F4A', fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase' }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+const tweakSelect = { padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(58,50,32,0.18)', background: '#F4EFE4', fontFamily: LLFONT, fontSize: 13, color: '#1F1A10', outline: 'none' };
+const tweakBtn = { padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(58,50,32,0.18)', background: '#F4EFE4', fontFamily: LLFONT, fontSize: 13, color: '#1F1A10', cursor: 'pointer' };
+
+function Phone({ children }) {
+  // Custom iOS-like frame (375 wide instead of default 402)
+  return (
+    <div data-screen-label="Lama Lama Rangers" style={{
+      width: 390, height: 844, borderRadius: 48, overflow: 'hidden',
+      position: 'relative', background: '#000',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.3)',
+    }}>
+      <div style={{ position: 'absolute', inset: 4, borderRadius: 44, overflow: 'hidden', background: T.paper }}>
+        {/* Status bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100, padding: '14px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', pointerEvents: 'none' }}>
+          <span style={{ fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 600, fontSize: 15, color: T.ink }}>6:42</span>
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+            <svg width="17" height="11" viewBox="0 0 19 12"><rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7" fill={T.ink}/><rect x="4.8" y="5" width="3.2" height="7" rx="0.7" fill={T.ink}/><rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7" fill={T.ink}/><rect x="14.4" y="0" width="3.2" height="12" rx="0.7" fill={T.ink}/></svg>
+            <svg width="14" height="10" viewBox="0 0 17 12"><path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z" fill={T.ink} opacity="0.35"/><path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z" fill={T.ink} opacity="0.35"/><circle cx="8.5" cy="10.5" r="1.5" fill={T.ink} opacity="0.35"/></svg>
+            <svg width="25" height="11" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke={T.ink} strokeOpacity="0.4" fill="none"/><rect x="2" y="2" width="17" height="9" rx="2" fill={T.ink}/></svg>
+          </div>
+        </div>
+        {/* Dynamic island */}
+        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 120, height: 34, borderRadius: 22, background: '#000', zIndex: 99 }}/>
+        {children}
+        {/* Home indicator */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 100, height: 28, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: 7, pointerEvents: 'none' }}>
+          <div style={{ width: 130, height: 5, borderRadius: 100, background: 'rgba(0,0,0,0.3)' }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script>
+</body>
+</html>
