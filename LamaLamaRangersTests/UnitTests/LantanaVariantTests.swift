@@ -16,6 +16,10 @@ final class LantanaVariantTests: XCTestCase {
         XCTAssertNotEqual(LantanaVariant.pinkEdgedRed.displayName, LantanaVariant.pinkEdgedRed.rawValue)
     }
 
+    func test_allCases_containsSixVariants() {
+        XCTAssertEqual(LantanaVariant.allCases.count, 6)
+    }
+
     // MARK: - color
 
     func test_color_isNotClear_forAllCases() {
@@ -56,6 +60,23 @@ final class LantanaVariantTests: XCTestCase {
         }
     }
 
+    func test_controlMethods_pink_includesFoliarSpray() {
+        XCTAssertTrue(LantanaVariant.pink.controlMethods.contains(.foliarSpray))
+    }
+
+    func test_controlMethods_red_includesCutStump() {
+        XCTAssertTrue(LantanaVariant.red.controlMethods.contains(.cutStump))
+    }
+
+    // MARK: - TreatmentMethod completeness
+
+    func test_treatmentMethod_allCases_haveNonEmptyInstructionsAndDisplayName() {
+        for method in TreatmentMethod.allCases {
+            XCTAssertFalse(method.instructions.isEmpty, "instructions empty for \(method)")
+            XCTAssertFalse(method.displayName.isEmpty, "displayName empty for \(method)")
+        }
+    }
+
     // MARK: - distinguishingFeatures
 
     func test_distinguishingFeatures_isNonEmpty_forAllCases() {
@@ -88,11 +109,5 @@ final class LantanaVariantTests: XCTestCase {
     func test_rawValueInit_caseSensitivity_wrongCaseReturnsNil() {
         XCTAssertNil(LantanaVariant(rawValue: "PINK"))
         XCTAssertNil(LantanaVariant(rawValue: "Pink"))
-    }
-
-    // MARK: - allCases coverage
-
-    func test_allCases_containsSixVariants() {
-        XCTAssertEqual(LantanaVariant.allCases.count, 6)
     }
 }
