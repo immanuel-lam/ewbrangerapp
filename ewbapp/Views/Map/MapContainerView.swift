@@ -147,7 +147,7 @@ struct MapContainerView: View {
     @ViewBuilder
     private func topChrome(geo: GeometryProxy) -> some View {
         ZStack(alignment: .topLeading) {
-            HStack {
+            HStack(alignment: .top) {
                 locationChip
                     .padding(.leading, 12)
                 Spacer()

@@ -53,7 +53,7 @@ struct VariantGuideView: View {
                         LazyVGrid(columns: columns, spacing: 10) {
                             ForEach(LantanaVariantContent.all, id: \.variant) { info in
                                 NavigationLink(destination: VariantDetailView(info: info)) {
-                                    VariantCard(info: info, isBiocontrolSeason: isBiocontrolSeason)
+                                    VariantGuideCard(info: info, isBiocontrolSeason: isBiocontrolSeason)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -68,7 +68,7 @@ struct VariantGuideView: View {
     }
 }
 
-private struct VariantCard: View {
+private struct VariantGuideCard: View {
     let info: LantanaVariantContent.VariantInfo
     let isBiocontrolSeason: Bool
 

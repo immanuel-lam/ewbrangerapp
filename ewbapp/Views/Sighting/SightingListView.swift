@@ -169,17 +169,9 @@ private struct SightingCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            RoundedRectangle(cornerRadius: 18)
+            Rectangle()
                 .fill(variant.color)
                 .frame(width: 5)
-                .clipShape(
-                    .rect(
-                        topLeadingRadius: 18,
-                        bottomLeadingRadius: 18,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: 0
-                    )
-                )
 
             HStack(alignment: .center, spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -223,7 +215,7 @@ private struct SightingCard: View {
             .padding(.horizontal, 14)
         }
         .background(Color.card)
-        .cornerRadius(18)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.lineBase.opacity(0.12), lineWidth: 1))
         .shadow(color: Color(hex: "281E0A").opacity(0.04), radius: 1, y: 1)
     }
