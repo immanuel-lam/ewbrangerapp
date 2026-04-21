@@ -31,10 +31,14 @@ struct PesticideListView: View {
                         NavigationLink(destination: PesticideDetailView(stock: stock, viewModel: viewModel)) {
                             StockRow(stock: stock)
                         }
+                        .listRowBackground(Color.dsBackground)
                     }
                 }
                 .listStyle(.plain)
+                .background(Color.dsBackground)
+                .scrollContentBackground(.hidden)
             }
+            .background(Color.dsBackground.ignoresSafeArea())
             .navigationTitle("Supplies")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

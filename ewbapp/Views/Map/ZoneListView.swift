@@ -40,6 +40,7 @@ struct ZoneListView: View {
                     .padding(.vertical, 4)
                 }
                 .foregroundStyle(Color.dsInk)
+                .listRowBackground(Color.dsBackground)
             }
             .onDelete { offsets in
                 offsets.map { zones[$0] }.forEach { deleteZone($0) }
