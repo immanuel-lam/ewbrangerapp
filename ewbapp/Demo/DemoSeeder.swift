@@ -266,6 +266,11 @@ struct DemoSeeder {
             try? ctx.save()
         }
 
+        // Force main context to pick up background changes immediately
+        DispatchQueue.main.async {
+            persistence.mainContext.refreshAllObjects()
+        }
+
         // Fake a recent cloud sync so the dashboard & settings show "synced"
         UserDefaults.standard.set(Date().addingTimeInterval(-3_600), forKey: "lastSyncTimestamp")
         UserDefaults.standard.set(true, forKey: "demoDataSeeded_v3")

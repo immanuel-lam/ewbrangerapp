@@ -23,11 +23,11 @@ struct PhotoCaptureView: View {
                             Image(systemName: "camera.fill")
                                 .font(.title2)
                             Text("Add Photo")
-                                .font(.caption)
+                                .font(DSFont.caption)
                         }
                         .frame(width: 80, height: 80)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(10)
+                        .background(Color.dsSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -58,10 +58,10 @@ struct PhotoThumbnail: View {
                 .frame(width: 80, height: 80)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         } else {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(.systemGray4))
+            RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous)
+                .fill(Color.dsSurface)
                 .frame(width: 80, height: 80)
-                .overlay(Image(systemName: "photo").foregroundColor(.secondary))
+                .overlay(Image(systemName: "photo").foregroundStyle(Color.dsInk3))
         }
     }
 }

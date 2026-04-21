@@ -13,7 +13,7 @@ struct PINEntryView: View {
             HStack(spacing: 20) {
                 ForEach(0..<4, id: \.self) { i in
                     Circle()
-                        .fill(i < enteredPIN.count ? Color.green : Color.secondary.opacity(0.3))
+                        .fill(i < enteredPIN.count ? Color.dsStatusCleared : Color.dsInk3.opacity(0.3))
                         .frame(width: 16, height: 16)
                 }
             }
@@ -29,10 +29,10 @@ struct PINEntryView: View {
                                     if digit == "⌫" { onDelete() } else { onDigit(digit) }
                                 } label: {
                                     Text(digit)
-                                        .font(.title2.bold())
+                                        .font(DSFont.headline)
                                         .frame(width: 90, height: 70)
-                                        .background(Color(.systemGray5))
-                                        .cornerRadius(12)
+                                        .background(Color.dsSurface)
+                                        .clipShape(RoundedRectangle(cornerRadius: DSRadius.md, style: .continuous))
                                 }
                                 .buttonStyle(.plain)
                             }

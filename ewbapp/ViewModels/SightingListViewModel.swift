@@ -15,7 +15,6 @@ final class SightingListViewModel: ObservableObject {
     init(persistence: PersistenceController, locationManager: LocationManager) {
         self.repository = SightingRepository(persistence: persistence)
         self.locationManager = locationManager
-        load()
     }
 
     func load() {

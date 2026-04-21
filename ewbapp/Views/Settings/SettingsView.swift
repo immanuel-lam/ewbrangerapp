@@ -28,7 +28,7 @@ struct SettingsView: View {
                         Text("Name")
                         Spacer()
                         Text(viewModel.currentRangerName.isEmpty ? "—" : viewModel.currentRangerName)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                     }
                     Button("Edit Name") {
                         editedName = viewModel.currentRangerName
@@ -43,14 +43,14 @@ struct SettingsView: View {
                         Text("Pending Records")
                         Spacer()
                         Text("\(viewModel.pendingSyncCount)")
-                            .foregroundColor(viewModel.pendingSyncCount > 0 ? .orange : .secondary)
+                            .foregroundStyle(viewModel.pendingSyncCount > 0 ? Color.dsStatusTreat : Color.dsInk3)
                     }
                     if let last = viewModel.lastSyncDate {
                         HStack {
                             Text("Last Synced")
                             Spacer()
                             Text(last, style: .relative)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(Color.dsInk3)
                         }
                     }
                     Button {
@@ -83,12 +83,12 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Tiles Available (\(version))")
                             Text(coverage)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(DSFont.caption)
+                                .foregroundStyle(Color.dsInk3)
                         }
                     case .unavailable:
                         Label("Tiles not downloaded", systemImage: "map.slash")
-                            .foregroundColor(.red)
+                            .foregroundStyle(Color.dsStatusActive)
                     case .downloading(let p):
                         HStack {
                             Text("Downloading…")
@@ -105,7 +105,7 @@ struct SettingsView: View {
                         Text("Version")
                         Spacer()
                         Text(viewModel.appVersion)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                     }
                     Button("Logout", role: .destructive) {
                         viewModel.logout()
@@ -132,8 +132,8 @@ struct SettingsView: View {
                         }
                         if let coord = devSettings.spoofedCoordinate {
                             Text(String(format: "%.4f, %.4f", coord.latitude, coord.longitude))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(DSFont.caption)
+                                .foregroundStyle(Color.dsInk3)
                         }
                     }
                 } header: {
@@ -144,8 +144,8 @@ struct SettingsView: View {
 
                 Section {
                     Button("Reset App Data") { showResetConfirm = true }
-                        .foregroundColor(.secondary)
-                        .font(.footnote)
+                        .foregroundStyle(Color.dsInk3)
+                        .font(DSFont.caption)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }

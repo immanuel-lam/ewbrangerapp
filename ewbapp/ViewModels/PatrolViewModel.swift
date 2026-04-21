@@ -15,7 +15,6 @@ final class PatrolViewModel: ObservableObject {
     init(persistence: PersistenceController, rangerID: UUID) {
         self.repository = PatrolRepository(persistence: persistence)
         self.rangerID = rangerID
-        load()
     }
 
     func load() {

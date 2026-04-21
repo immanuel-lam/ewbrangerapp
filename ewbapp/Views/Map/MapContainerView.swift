@@ -92,9 +92,9 @@ struct MapContainerView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Drawing: \(drawingZone?.name ?? "Zone")")
-                                    .font(.headline).foregroundColor(.white)
+                                    .font(DSFont.headline).foregroundStyle(.white)
                                 Text("\(drawVertices.count) vertices — tap map to add points")
-                                    .font(.caption).foregroundColor(.white.opacity(0.85))
+                                    .font(DSFont.caption).foregroundStyle(.white.opacity(0.85))
                             }
                             Spacer()
                             if !drawVertices.isEmpty {
@@ -107,15 +107,17 @@ struct MapContainerView: View {
                         HStack(spacing: 16) {
                             Button("Cancel") { drawingZone = nil; drawVertices = [] }
                                 .frame(maxWidth: .infinity).padding(.vertical, 12)
-                                .background(Color(.systemGray5)).cornerRadius(10)
+                                .background(Color.dsSurface)
+                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
                             Button("Save Polygon") { savePolygon() }
                                 .frame(maxWidth: .infinity).padding(.vertical, 12)
-                                .background(drawVertices.count >= 3 ? Color.green : Color.gray)
-                                .foregroundColor(.white).cornerRadius(10)
+                                .background(drawVertices.count >= 3 ? Color.dsStatusCleared : Color.dsInk3)
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
                                 .disabled(drawVertices.count < 3)
                         }
                         .padding(.horizontal).padding(.vertical, 10)
-                        .background(Color(.systemBackground))
+                        .background(Color.dsBackground)
                     }
                     .transition(.move(edge: .bottom))
                 }
@@ -144,12 +146,12 @@ struct MapContainerView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "map")
                                     Text(mapTypeLabel)
-                                        .font(.caption.bold())
+                                        .font(DSFont.caption)
                                 }
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 7)
                                 .background(.ultraThinMaterial)
-                                .cornerRadius(8)
+                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.xs, style: .continuous))
                             }
                             .padding(.leading)
                             Spacer()
@@ -190,7 +192,7 @@ struct MapContainerView: View {
                                 Image(systemName: showTimeline ? "clock.fill" : "clock")
                                     .frame(width: 40, height: 40)
                                     .background(.ultraThinMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
                             }
                             Spacer()
                             Menu {
@@ -207,9 +209,9 @@ struct MapContainerView: View {
                                 }
                             } label: {
                                 Image(systemName: "plus")
-                                    .font(.title2.bold()).foregroundColor(.white)
+                                    .font(DSFont.headline).foregroundStyle(.white)
                                     .frame(width: 56, height: 56)
-                                    .background(Color.green).clipShape(Circle()).shadow(radius: 4)
+                                    .background(Color.dsStatusCleared).clipShape(Circle()).shadow(radius: 4)
                             }
                         }
                         .padding(.horizontal)
@@ -319,10 +321,10 @@ private struct ZonePickerSheet: View {
                         Text(zone.name ?? "Unnamed Zone")
                         Spacer()
                         Text(zone.status?.capitalized ?? "Active")
-                            .font(.caption).foregroundColor(.secondary)
+                            .font(DSFont.caption).foregroundStyle(Color.dsInk3)
                     }
                 }
-                .foregroundColor(.primary)
+                .foregroundStyle(Color.dsInk)
             }
             .navigationTitle("Select Zone to Draw")
             .navigationBarTitleDisplayMode(.inline)

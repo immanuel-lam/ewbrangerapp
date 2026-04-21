@@ -63,8 +63,8 @@ struct TaskListView: View {
             if viewModel.overdueCount > 0 && !viewModel.showCompleted {
                 Section {
                     Label("\(viewModel.overdueCount) overdue task\(viewModel.overdueCount == 1 ? "" : "s")", systemImage: "exclamationmark.triangle.fill")
-                        .foregroundColor(.red)
-                        .font(.subheadline.bold())
+                        .foregroundStyle(Color.dsStatusActive)
+                        .font(DSFont.subhead)
                 }
             }
 
@@ -84,12 +84,12 @@ struct TaskListView: View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 48))
-                .foregroundColor(.secondary)
+                .foregroundStyle(Color.dsInk3)
             Text(viewModel.showCompleted ? "No tasks" : "All clear")
-                .font(.title3.bold())
+                .font(DSFont.headline)
             Text(viewModel.showCompleted ? "Create a task with the + button." : "No pending tasks. Tap + to add one.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(DSFont.subhead)
+                .foregroundStyle(Color.dsInk3)
                 .multilineTextAlignment(.center)
         }
         .padding()
@@ -114,37 +114,37 @@ struct TaskRow: View {
             Button(action: onToggle) {
                 Image(systemName: task.isComplete ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundColor(task.isComplete ? .green : .secondary)
+                    .foregroundStyle(task.isComplete ? Color.dsStatusCleared : Color.dsInk3)
             }
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.title ?? "Untitled")
-                    .font(.subheadline.bold())
+                    .font(DSFont.subhead)
                     .strikethrough(task.isComplete)
-                    .foregroundColor(task.isComplete ? .secondary : .primary)
+                    .foregroundStyle(task.isComplete ? Color.dsInk3 : Color.dsInk)
 
                 HStack(spacing: 8) {
                     Label(priority.displayName, systemImage: priority.icon)
-                        .font(.caption)
-                        .foregroundColor(priority.color)
+                        .font(DSFont.caption)
+                        .foregroundStyle(priority.color)
 
                     if let due = task.dueDate {
                         Label(dueDateLabel(due), systemImage: "calendar")
-                            .font(.caption)
-                            .foregroundColor(isOverdue ? .red : .secondary)
+                            .font(DSFont.caption)
+                            .foregroundStyle(isOverdue ? Color.dsStatusActive : Color.dsInk3)
                     }
 
                     if let name = task.assignedRanger?.displayName {
                         Label(name, systemImage: "person.circle")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
                     }
 
                     if task.sourceTreatment != nil {
                         Label("Auto", systemImage: "wand.and.stars")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
                     }
                 }
             }

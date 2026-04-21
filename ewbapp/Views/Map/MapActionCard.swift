@@ -80,8 +80,8 @@ struct MapActionCard: View {
                         .lineLimit(1)
                     if let sub = data.subtitle {
                         Text(sub)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
                             .lineLimit(1)
                     }
                 }
@@ -98,8 +98,8 @@ struct MapActionCard: View {
                         dismiss()
                     } label: {
                         Label(data.actions[i].label, systemImage: data.actions[i].icon)
-                            .font(.subheadline)
-                            .foregroundColor(data.actions[i].isDestructive ? .red : .primary)
+                            .font(DSFont.subhead)
+                            .foregroundStyle(data.actions[i].isDestructive ? Color.dsStatusActive : Color.dsInk)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)

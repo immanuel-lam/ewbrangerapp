@@ -22,7 +22,6 @@ final class DashboardViewModel: ObservableObject {
     init(persistence: PersistenceController, syncEngine: SyncEngine) {
         self.persistence = persistence
         self.syncEngine = syncEngine
-        load()
     }
 
     func load() {

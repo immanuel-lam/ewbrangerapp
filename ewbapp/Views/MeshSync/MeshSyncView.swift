@@ -23,31 +23,31 @@ struct MeshSyncView: View {
                 // Status banner
                 HStack {
                     Circle()
-                        .fill(viewModel.isSyncing ? .orange : .gray)
+                        .fill(viewModel.isSyncing ? Color.dsStatusTreat : Color.dsInk3)
                         .frame(width: 10, height: 10)
                     Text(viewModel.overallStatus)
-                        .font(.callout)
+                        .font(DSFont.callout)
                     Spacer()
                 }
                 .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .background(Color.dsSurface)
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.md, style: .continuous))
 
                 // Peers list
                 if viewModel.discoveredPeers.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "antenna.radiowaves.left.and.right")
                             .font(.system(size: 48))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                         Text("Searching for nearby rangers…")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(40)
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Nearby Rangers")
-                            .font(.headline)
+                            .font(DSFont.headline)
                             .padding(.horizontal)
                         ForEach(viewModel.discoveredPeers, id: \.displayName) { peer in
                             PeerRow(
@@ -63,9 +63,9 @@ struct MeshSyncView: View {
                 // Summary
                 if let summary = viewModel.lastSyncSummary {
                     Text(summary)
-                        .font(.callout)
+                        .font(DSFont.callout)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(Color.dsInk3)
                 }
 
                 // Start / Stop
@@ -78,7 +78,7 @@ struct MeshSyncView: View {
                             viewModel.startDiscovery()
                         }
                     },
-                    color: viewModel.isSyncing ? .red : .green
+                    color: viewModel.isSyncing ? Color.dsStatusActive : Color.dsStatusCleared
                 )
                 .padding(.horizontal)
                 .padding(.bottom)
@@ -95,19 +95,19 @@ struct PeerRow: View {
     var body: some View {
         HStack {
             Image(systemName: "iphone.circle.fill")
-                .foregroundColor(.blue)
+                .foregroundStyle(Color.dsPrimary)
             VStack(alignment: .leading) {
                 Text(peerName)
-                    .font(.subheadline.bold())
+                    .font(DSFont.subhead)
                 Text(status)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.dsInk3)
             }
             Spacer()
         }
         .padding(12)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .background(Color.dsSurface)
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
         .padding(.horizontal)
     }
 }

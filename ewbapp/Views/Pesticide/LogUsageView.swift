@@ -26,14 +26,14 @@ struct LogUsageView: View {
                         Text("Before")
                         Spacer()
                         Text(String(format: "%.1f %@", stock.currentQuantity, stock.unit ?? "L"))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                     }
                     if let qty = Double(quantityStr), qty > 0 {
                         HStack {
                             Text("After")
                             Spacer()
                             Text(String(format: "%.1f %@", max(0, stock.currentQuantity - qty), stock.unit ?? "L"))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(Color.dsInk3)
                         }
                     }
                 }

@@ -28,7 +28,6 @@ final class MapViewModel: ObservableObject {
         self.sightingRepository = SightingRepository(persistence: persistence)
         self.zoneRepository = ZoneRepository(persistence: persistence)
         self.patrolRepository = PatrolRepository(persistence: persistence)
-        load()
     }
 
     func load() {

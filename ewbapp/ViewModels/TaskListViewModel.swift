@@ -13,7 +13,6 @@ final class TaskListViewModel: ObservableObject {
     init(persistence: PersistenceController, rangerID: UUID) {
         self.repository = TaskRepository(persistence: persistence)
         self.rangerID = rangerID
-        load()
     }
 
     func load() {

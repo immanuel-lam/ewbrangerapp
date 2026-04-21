@@ -22,7 +22,7 @@ struct SpeciesIndicator: View {
             Circle()
                 .fill(species.color)
                 .frame(width: size, height: size)
-                .overlay(Circle().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
+                .overlay(Circle().strokeBorder(Color.dsInk.opacity(0.12), lineWidth: 0.5))
         }
     }
 }

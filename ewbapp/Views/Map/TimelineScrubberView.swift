@@ -22,8 +22,8 @@ struct TimelineScrubberView: View {
                     }
                 ), in: range.lowerBound.timeIntervalSince1970...range.upperBound.timeIntervalSince1970)
                 Text(date, style: .date)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.dsInk3)
             }
         }
         .padding(12)

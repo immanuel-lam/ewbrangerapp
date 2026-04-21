@@ -5,15 +5,15 @@ struct SyncStatusBadge: View {
 
     var body: some View {
         Image(systemName: status.iconSystemName)
-            .foregroundColor(color)
-            .font(.caption)
+            .foregroundStyle(color)
+            .font(DSFont.caption)
     }
 
     private var color: Color {
         switch status {
-        case .synced: return .green
-        case .pendingCreate, .pendingUpdate: return .orange
-        case .pendingDelete: return .red
+        case .synced: return Color.dsStatusCleared
+        case .pendingCreate, .pendingUpdate: return Color.dsStatusTreat
+        case .pendingDelete: return Color.dsStatusActive
         }
     }
 }

@@ -7,14 +7,14 @@ struct LayerToggleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            LayerIconButton(icon: "mappin.circle.fill", isOn: $showSightings, color: .red)
+            LayerIconButton(icon: "mappin.circle.fill", isOn: $showSightings, color: Color.dsStatusActive)
             Divider().frame(width: 28)
-            LayerIconButton(icon: "square.dashed", isOn: $showZones, color: .orange)
+            LayerIconButton(icon: "square.dashed", isOn: $showZones, color: Color.dsStatusTreat)
             Divider().frame(width: 28)
-            LayerIconButton(icon: "figure.walk", isOn: $showPatrols, color: .blue)
+            LayerIconButton(icon: "figure.walk", isOn: $showPatrols, color: Color.dsPrimary)
         }
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm))
     }
 }
 
@@ -29,7 +29,7 @@ private struct LayerIconButton: View {
         } label: {
             Image(systemName: icon)
                 .font(.system(size: 18))
-                .foregroundColor(isOn ? color : Color(.systemGray3))
+                .foregroundStyle(isOn ? color : Color.dsInk3.opacity(0.5))
                 .frame(width: 40, height: 40)
         }
         .buttonStyle(.plain)
