@@ -14,6 +14,20 @@ final class LogSightingViewModel: ObservableObject {
     @Published var isSaving = false
     @Published var saveError: String?
     @Published var didSave = false
+    @Published var biocontrolObservation: BiocontrolObservation = .notChecked
+
+    enum BiocontrolObservation: String, CaseIterable {
+        case notChecked, observed, notObserved, unsure
+
+        var displayName: String {
+            switch self {
+            case .notChecked:  return "Not checked"
+            case .observed:    return "Observed"
+            case .notObserved: return "Not seen"
+            case .unsure:      return "Unsure"
+            }
+        }
+    }
 
     var canSave: Bool {
         capturedLocation != nil && selectedSpecies != nil
@@ -49,8 +63,6 @@ final class LogSightingViewModel: ObservableObject {
     }
 
     func capturePhoto() async {
-        // In MVP: use UIImagePickerController, save HEIF to Documents/Photos
-        // This is called from the view via a coordinator
         let filename = "sighting_\(UUID().uuidString).heif"
         photoFilenames.append(filename)
     }
@@ -60,13 +72,21 @@ final class LogSightingViewModel: ObservableObject {
         isSaving = true
         saveError = nil
         do {
+            var finalNotes = notes
+            if species == .lantana && biocontrolObservation != .notChecked {
+                let bioNote = "[Lantana bug: \(biocontrolObservation.displayName)]"
+                finalNotes = finalNotes.isEmpty ? bioNote : finalNotes + " " + bioNote
+                if biocontrolObservation == .observed {
+                    finalNotes += " ⚠️ Biocontrol present - consider delaying herbicide"
+                }
+            }
             _ = try await sightingRepository.createSighting(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude,
                 horizontalAccuracy: location.horizontalAccuracy,
                 species: species,
                 infestationSize: selectedSize,
-                notes: notes.isEmpty ? nil : notes,
+                notes: finalNotes.isEmpty ? nil : finalNotes,
                 photoFilenames: photoFilenames,
                 rangerID: rangerID
             )

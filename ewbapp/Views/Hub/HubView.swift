@@ -5,6 +5,7 @@ import SwiftUI
 
 struct HubView: View {
     @EnvironmentObject var appEnv: AppEnvironment
+    @State private var tilesAppeared = false
 
     private var ranger: RangerProfile? {
         guard let id = appEnv.authManager.currentRangerID else { return nil }
@@ -23,32 +24,26 @@ struct HubView: View {
                         .padding(.horizontal, DSSpace.lg)
                         .padding(.top, DSSpace.lg)
 
-                    // Quick access grid
+                    // Quick access grid — stagger tiles on appear
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DSSpace.md) {
-                        HubTile(
-                            title: "Dashboard",
-                            subtitle: "Stats & progress",
-                            icon: "chart.bar.fill",
-                            accent: Color.dsPrimary
-                        ) { DashboardView() }
-                        HubTile(
-                            title: "Supplies",
-                            subtitle: "Herbicide stock",
-                            icon: "flask.fill",
-                            accent: Color.dsAccent
-                        ) { PesticideListView() }
-                        HubTile(
-                            title: "Day Sync",
-                            subtitle: "Mesh sync devices",
-                            icon: "antenna.radiowaves.left.and.right",
-                            accent: Color(hex: "2E7A6B")
-                        ) { DemoMeshSyncView() }
-                        HubTile(
-                            title: "Zones",
-                            subtitle: "Manage areas",
-                            icon: "square.dashed",
-                            accent: Color(hex: "7B5EA8")
-                        ) { ZoneListView() }
+                        HubTile(title: "Dashboard", subtitle: "Stats & progress",
+                                icon: "chart.bar.fill", accent: Color.dsPrimary, index: 0,
+                                appeared: tilesAppeared) { DashboardView() }
+                        HubTile(title: "Supplies", subtitle: "Herbicide stock",
+                                icon: "flask.fill", accent: Color.dsAccent, index: 1,
+                                appeared: tilesAppeared) { PesticideListView() }
+                        HubTile(title: "Day Sync", subtitle: "Mesh sync devices",
+                                icon: "antenna.radiowaves.left.and.right", accent: Color(hex: "2E7A6B"), index: 2,
+                                appeared: tilesAppeared) { DemoMeshSyncView() }
+                        HubTile(title: "Zones", subtitle: "Manage areas",
+                                icon: "square.dashed", accent: Color(hex: "7B5EA8"), index: 3,
+                                appeared: tilesAppeared) { ZoneListView() }
+                        HubTile(title: "Cloud Sync", subtitle: "Supabase · S3",
+                                icon: "cloud.fill", accent: Color(hex: "3ECF8E"), index: 4,
+                                appeared: tilesAppeared) { DemoLiveSyncView() }
+                        HubTile(title: "Handover", subtitle: "End of shift report",
+                                icon: "doc.text.fill", accent: Color(hex: "8B5E3C"), index: 5,
+                                appeared: tilesAppeared) { ShiftHandoverView() }
                     }
                     .padding(.horizontal, DSSpace.lg)
                     .padding(.top, DSSpace.lg)
@@ -100,6 +95,12 @@ struct HubView: View {
             .background(Color.dsBackground.ignoresSafeArea())
             .navigationTitle("Hub")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                guard !tilesAppeared else { return }
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.05)) {
+                    tilesAppeared = true
+                }
+            }
         }
     }
 }
@@ -177,6 +178,8 @@ private struct HubTile<Destination: View>: View {
     let subtitle: String
     let icon: String
     let accent: Color
+    let index: Int
+    let appeared: Bool
     @ViewBuilder let destination: () -> Destination
 
     var body: some View {
@@ -211,5 +214,12 @@ private struct HubTile<Destination: View>: View {
             .shadow(color: Color.dsInk.opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
+        .opacity(appeared ? 1 : 0)
+        .scaleEffect(appeared ? 1 : 0.9, anchor: .center)
+        .animation(
+            .spring(response: 0.45, dampingFraction: 0.72)
+                .delay(Double(index) * 0.06),
+            value: appeared
+        )
     }
 }

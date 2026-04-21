@@ -82,6 +82,38 @@ struct DemoMeshSyncView: View {
                         .transition(.opacity)
                 }
 
+                if phase == .done {
+                    NavigationLink(destination: ConflictResolverView()) {
+                        HStack(spacing: DSSpace.md) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(Color.dsAccent)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Zone Conflicts Detected")
+                                    .font(DSFont.subhead)
+                                    .foregroundStyle(Color.dsInk)
+                                Text("2 boundaries need review")
+                                    .font(DSFont.caption)
+                                    .foregroundStyle(Color.dsInk3)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13))
+                                .foregroundStyle(Color.dsInkMuted)
+                        }
+                        .padding(DSSpace.md)
+                        .background(Color.dsCard)
+                        .clipShape(RoundedRectangle(cornerRadius: DSRadius.md, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DSRadius.md, style: .continuous)
+                                .strokeBorder(Color.dsDivider.opacity(0.6), lineWidth: 0.75)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal)
+                    .transition(.scale(scale: 0.95).combined(with: .opacity))
+                }
+
                 LargeButton(
                     title: buttonTitle,
                     action: { if phase == .idle || phase == .done { runFakeSync() } },

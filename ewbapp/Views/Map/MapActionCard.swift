@@ -4,6 +4,7 @@ struct MapActionCardData {
     let title: String
     let subtitle: String?
     let anchor: CGPoint   // screen-space tip of the pin / tap point
+    let species: InvasiveSpecies?
     let actions: [MapCardAction]
 }
 
@@ -74,20 +75,28 @@ struct MapActionCard: View {
         .overlay(
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: 2) {
-                    Text(data.title)
-                        .font(.subheadline.bold())
-                        .lineLimit(1)
-                    if let sub = data.subtitle {
-                        Text(sub)
-                            .font(DSFont.caption)
-                            .foregroundStyle(Color.dsInk3)
-                            .lineLimit(1)
+                HStack(spacing: 8) {
+                    if let species = data.species {
+                        Circle()
+                            .fill(species.color)
+                            .frame(width: 8, height: 8)
                     }
+                    VStack(alignment: data.species != nil ? .leading : .center, spacing: 2) {
+                        Text(data.title)
+                            .font(DSFont.subhead)
+                            .lineLimit(1)
+                        if let sub = data.subtitle {
+                            Text(sub)
+                                .font(DSFont.caption)
+                                .foregroundStyle(Color.dsInk3)
+                                .lineLimit(1)
+                        }
+                    }
+                    if data.species != nil { Spacer() }
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: data.species != nil ? .leading : .center)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.vertical, 9)
 
                 Divider()
 

@@ -3,7 +3,7 @@ import SwiftUI
 struct PatrolView: View {
     @EnvironmentObject var appEnv: AppEnvironment
     @StateObject private var viewModel: PatrolViewModel
-    @State private var historyTab = 0 // 0 = List, 1 = Calendar
+    @State private var historyTab = 0
 
     init() {
         let rangerID = AppEnvironment.shared.authManager.currentRangerID ?? {
@@ -23,48 +23,89 @@ struct PatrolView: View {
                     ActivePatrolView(viewModel: viewModel)
                 } else {
                     ScrollView {
-                        VStack(spacing: 24) {
-                            // Start patrol
-                            VStack(alignment: .leading, spacing: DSSpace.md) {
-                                Text("Start New Patrol")
-                                    .font(DSFont.headline)
-                                    .foregroundStyle(Color.dsInk)
-                                Picker("Area", selection: $viewModel.selectedAreaName) {
-                                    ForEach(PortStewartZones.patrolAreas, id: \.self) { area in
-                                        Text(area).tag(area)
-                                    }
-                                }
-                                .pickerStyle(.wheel)
-                                .frame(height: 120)
-                                LargeButton(title: "Start Patrol", action: {
-                                    Task { await viewModel.startPatrol() }
-                                })
-                            }
-                            .dsCard()
-                            .padding(.horizontal)
-
-                            // History toggle
-                            Picker("View", selection: $historyTab) {
-                                Text("List").tag(0)
-                                Text("Calendar").tag(1)
-                            }
-                            .pickerStyle(.segmented)
-                            .padding(.horizontal)
-
-                            if historyTab == 0 {
-                                PatrolListView(patrols: viewModel.patrols)
-                                    .frame(minHeight: 200)
-                            } else {
-                                PatrolCalendarView(patrols: viewModel.patrols)
-                                    .padding(.horizontal)
-                            }
+                        VStack(spacing: DSSpace.lg) {
+                            startPatrolCard
+                            historySection
                         }
-                        .padding(.vertical)
+                        .padding(.vertical, DSSpace.md)
                     }
+                    .background(Color.dsBackground.ignoresSafeArea())
                 }
             }
             .navigationTitle("Patrol")
             .onAppear { viewModel.load() }
+        }
+    }
+
+    // MARK: - Start Patrol Card
+
+    private var startPatrolCard: some View {
+        VStack(alignment: .leading, spacing: DSSpace.md) {
+            HStack(spacing: 6) {
+                Image(systemName: "figure.walk.circle.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.dsPrimary)
+                Text("Start New Patrol")
+                    .font(DSFont.headline)
+                    .foregroundStyle(Color.dsInk)
+            }
+
+            // Area picker — menu style
+            Menu {
+                ForEach(PortStewartZones.patrolAreas, id: \.self) { area in
+                    Button(area) { viewModel.selectedAreaName = area }
+                }
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Area")
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
+                        Text(viewModel.selectedAreaName)
+                            .font(DSFont.subhead)
+                            .foregroundStyle(Color.dsInk)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.dsInk3)
+                }
+                .padding(DSSpace.md)
+                .background(Color.dsSurface)
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous)
+                        .strokeBorder(Color.dsDivider, lineWidth: 0.75)
+                )
+            }
+
+            LargeButton(title: "Start Patrol") {
+                Task { await viewModel.startPatrol() }
+            }
+        }
+        .dsCard()
+        .padding(.horizontal, DSSpace.lg)
+    }
+
+    // MARK: - History Section
+
+    private var historySection: some View {
+        VStack(spacing: DSSpace.md) {
+            // Segment toggle
+            Picker("View", selection: $historyTab) {
+                Text("List").tag(0)
+                Text("Calendar").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, DSSpace.lg)
+
+            if historyTab == 0 {
+                PatrolListView(patrols: viewModel.patrols)
+            } else {
+                PatrolCalendarView(patrols: viewModel.patrols)
+                    .dsCard()
+                    .padding(.horizontal, DSSpace.lg)
+            }
         }
     }
 }

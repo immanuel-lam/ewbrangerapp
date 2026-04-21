@@ -16,6 +16,8 @@ struct MapContainerView: View {
     @State private var showZonePicker = false
     @State private var zoneForDetail: InfestationZone?
     @State private var showTimeline = false
+    @State private var fabPressed = false
+    @State private var showBloomCalendar = false
 
     init() {
         _viewModel = StateObject(wrappedValue: MapViewModel(
@@ -28,6 +30,7 @@ struct MapContainerView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .bottom) {
+                // MARK: Map
                 MapView(
                     mapType: viewModel.mapType,
                     annotations: viewModel.filteredSightings.map { SightingAnnotation(sighting: $0) },
@@ -36,10 +39,11 @@ struct MapContainerView: View {
                     showZones: viewModel.showZones,
                     tileOverlay: OfflineTileManager.shared.tileOverlay(),
                     onSelectSighting: { sighting, point in
-                        let variant = InvasiveSpecies.from(legacyVariant: sighting.variant ?? "").displayName
+                        let species = InvasiveSpecies.from(legacyVariant: sighting.variant ?? "")
                         let size = InfestationSize(rawValue: sighting.infestationSize ?? "")?.displayName
                         actionCard = MapActionCardData(
-                            title: variant, subtitle: size, anchor: point,
+                            title: species.displayName, subtitle: size, anchor: point,
+                            species: species,
                             actions: [
                                 MapCardAction(label: "View Details", icon: "info.circle", isDestructive: false) {
                                     sightingForDetail = sighting
@@ -56,6 +60,7 @@ struct MapContainerView: View {
                         }
                         actionCard = MapActionCardData(
                             title: patrol.areaName ?? "Patrol", subtitle: date, anchor: point,
+                            species: nil,
                             actions: [
                                 MapCardAction(label: "Delete", icon: "trash", isDestructive: true) {
                                     deletePatrol(patrol)
@@ -68,6 +73,7 @@ struct MapContainerView: View {
                             title: zone.name ?? "Zone",
                             subtitle: statusLabel(zone.status),
                             anchor: point,
+                            species: InvasiveSpecies.from(legacyVariant: zone.dominantVariant ?? ""),
                             actions: [
                                 MapCardAction(label: "View Details", icon: "info.circle", isDestructive: false) {
                                     zoneForDetail = zone
@@ -86,95 +92,39 @@ struct MapContainerView: View {
                 )
                 .ignoresSafeArea()
 
-                // Draw mode banner
+                // MARK: Draw mode
                 if isDrawing {
-                    VStack(spacing: 0) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Drawing: \(drawingZone?.name ?? "Zone")")
-                                    .font(DSFont.headline).foregroundStyle(.white)
-                                Text("\(drawVertices.count) vertices — tap map to add points")
-                                    .font(DSFont.caption).foregroundStyle(.white.opacity(0.85))
-                            }
-                            Spacer()
-                            if !drawVertices.isEmpty {
-                                Button("Undo") { drawVertices.removeLast() }
-                                    .buttonStyle(.bordered).tint(.white).padding(.trailing, 8)
-                            }
-                        }
-                        .padding().background(Color.black.opacity(0.75))
-
-                        HStack(spacing: 16) {
-                            Button("Cancel") { drawingZone = nil; drawVertices = [] }
-                                .frame(maxWidth: .infinity).padding(.vertical, 12)
-                                .background(Color.dsSurface)
-                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
-                            Button("Save Polygon") { savePolygon() }
-                                .frame(maxWidth: .infinity).padding(.vertical, 12)
-                                .background(drawVertices.count >= 3 ? Color.dsStatusCleared : Color.dsInk3)
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
-                                .disabled(drawVertices.count < 3)
-                        }
-                        .padding(.horizontal).padding(.vertical, 10)
-                        .background(Color.dsBackground)
-                    }
-                    .transition(.move(edge: .bottom))
+                    drawModeBanner
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
 
                 if !isDrawing {
-                    // Top-left: map type picker
+                    // MARK: Top overlay row
                     VStack {
-                        HStack {
-                            Menu {
-                                Button {
-                                    viewModel.mapType = .satellite
-                                } label: {
-                                    Label("Satellite", systemImage: viewModel.mapType == .satellite ? "checkmark" : "globe")
-                                }
-                                Button {
-                                    viewModel.mapType = .hybrid
-                                } label: {
-                                    Label("Hybrid", systemImage: viewModel.mapType == .hybrid ? "checkmark" : "globe")
-                                }
-                                Button {
-                                    viewModel.mapType = .standard
-                                } label: {
-                                    Label("Standard", systemImage: viewModel.mapType == .standard ? "checkmark" : "map")
-                                }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "map")
-                                    Text(mapTypeLabel)
-                                        .font(DSFont.caption)
-                                }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 7)
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: DSRadius.xs, style: .continuous))
-                            }
-                            .padding(.leading)
+                        HStack(alignment: .center) {
+                            // Stats badge
+                            mapStatsBadge
+                                .padding(.leading, DSSpace.lg)
+
                             Spacer()
+
+                            // Bloom calendar button
+                            bloomButton
+                                .padding(.trailing, DSSpace.sm)
+
+                            // Map type toggle
+                            mapTypeButton
+                                .padding(.trailing, DSSpace.lg)
                         }
-                        .padding(.top, 8)
+                        .padding(.top, DSSpace.sm)
                         Spacer()
                     }
 
-                    // Left side: layer toggle icon stack
-                    HStack {
-                        LayerToggleView(
-                            showSightings: $viewModel.showSightings,
-                            showZones: $viewModel.showZones,
-                            showPatrols: $viewModel.showPatrols
-                        )
-                        .padding(.leading)
-                        .padding(.bottom, 80)
+                    // MARK: Bottom controls
+                    VStack(spacing: DSSpace.sm) {
                         Spacer()
-                    }
 
-                    // Bottom bar: clock + FAB
-                    VStack(spacing: 8) {
-                        Spacer()
+                        // Timeline scrubber
                         if showTimeline {
                             TimelineScrubberView(
                                 date: $viewModel.timelineDate,
@@ -182,44 +132,18 @@ struct MapContainerView: View {
                                 isPlaying: viewModel.isPlayingTimeline,
                                 onTogglePlay: viewModel.toggleTimeline
                             )
-                            .padding(.horizontal)
+                            .padding(.horizontal, DSSpace.lg)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
-                        HStack(alignment: .center) {
-                            Button {
-                                withAnimation { showTimeline.toggle() }
-                            } label: {
-                                Image(systemName: showTimeline ? "clock.fill" : "clock")
-                                    .frame(width: 40, height: 40)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
-                            }
-                            Spacer()
-                            Menu {
-                                Button { showLogSheet = true } label: {
-                                    Label("Log Sighting", systemImage: "mappin.and.ellipse")
-                                }
-                                Button { showAddZoneSheet = true } label: {
-                                    Label("Add Zone", systemImage: "square.dashed")
-                                }
-                                if !viewModel.zones.isEmpty {
-                                    Button { showZonePicker = true } label: {
-                                        Label("Draw Zone Boundary", systemImage: "pencil.tip.crop.circle")
-                                    }
-                                }
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(DSFont.headline).foregroundStyle(.white)
-                                    .frame(width: 56, height: 56)
-                                    .background(Color.dsStatusCleared).clipShape(Circle()).shadow(radius: 4)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
+
+                        // Bottom control bar
+                        mapControlBar
+                            .padding(.horizontal, DSSpace.lg)
+                            .padding(.bottom, DSSpace.md)
                     }
                 }
 
-                // Floating action card
+                // MARK: Action card
                 if let card = actionCard {
                     MapActionCard(data: card, screenSize: geo.size) {
                         actionCard = nil
@@ -230,6 +154,7 @@ struct MapContainerView: View {
             }
             .animation(.easeInOut(duration: 0.2), value: isDrawing)
             .animation(.spring(duration: 0.2), value: actionCard == nil)
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showTimeline)
         }
         .sheet(isPresented: $showLogSheet, onDismiss: { viewModel.load() }) {
             if let rangerID = appEnv.authManager.currentRangerID {
@@ -253,14 +178,242 @@ struct MapContainerView: View {
                 drawingZone = zone; drawVertices = []; showZonePicker = false
             }
         }
+        .sheet(isPresented: $showBloomCalendar) {
+            BloomCalendarView()
+        }
         .onAppear { viewModel.load() }
     }
 
-    private var mapTypeLabel: String {
+    // MARK: - Map stats badge
+
+    private var mapStatsBadge: some View {
+        HStack(spacing: DSSpace.sm) {
+            if viewModel.showSightings && !viewModel.filteredSightings.isEmpty {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.dsStatusActive)
+                        .frame(width: 7, height: 7)
+                    Text("\(viewModel.filteredSightings.count)")
+                        .font(DSFont.caption.weight(.semibold))
+                        .foregroundStyle(Color.primary)
+                }
+            }
+            if viewModel.showZones && !viewModel.zones.isEmpty {
+                HStack(spacing: 4) {
+                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                        .fill(Color.dsStatusTreat)
+                        .frame(width: 8, height: 8)
+                    Text("\(viewModel.zones.count)")
+                        .font(DSFont.caption.weight(.semibold))
+                        .foregroundStyle(Color.primary)
+                }
+            }
+        }
+        .padding(.horizontal, DSSpace.md)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+        .opacity((viewModel.filteredSightings.isEmpty && viewModel.zones.isEmpty) ? 0 : 1)
+        .onTapGesture { } // no-op; bloom button handles tap
+    }
+
+    // MARK: - Bloom calendar button (used in top bar area)
+
+    private var bloomButton: some View {
+        Button {
+            showBloomCalendar = true
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("Bloom")
+                    .font(DSFont.caption)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, DSSpace.md)
+            .padding(.vertical, 7)
+            .background(Color.dsPrimary)
+            .clipShape(Capsule())
+            .shadow(color: Color.dsPrimary.opacity(0.3), radius: 4, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Map type button
+
+    private var mapTypeButton: some View {
+        Menu {
+            Button {
+                viewModel.mapType = .satellite
+            } label: {
+                Label("Satellite", systemImage: viewModel.mapType == .satellite ? "checkmark" : "globe")
+            }
+            Button {
+                viewModel.mapType = .hybrid
+            } label: {
+                Label("Hybrid", systemImage: viewModel.mapType == .hybrid ? "checkmark" : "globe")
+            }
+            Button {
+                viewModel.mapType = .standard
+            } label: {
+                Label("Standard", systemImage: viewModel.mapType == .standard ? "checkmark" : "map")
+            }
+        } label: {
+            Image(systemName: mapTypeIcon)
+                .font(.system(size: 15, weight: .semibold))
+                .frame(width: 38, height: 38)
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        }
+    }
+
+    // MARK: - Bottom control bar
+
+    private var mapControlBar: some View {
+        HStack(spacing: DSSpace.md) {
+            // Layer toggles
+            LayerToggleView(
+                showSightings: $viewModel.showSightings,
+                showZones: $viewModel.showZones,
+                showPatrols: $viewModel.showPatrols
+            )
+
+            Spacer()
+
+            // Timeline clock
+            Button {
+                withAnimation { showTimeline.toggle() }
+            } label: {
+                Image(systemName: showTimeline ? "clock.fill" : "clock")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(showTimeline ? Color.dsPrimary : Color.primary)
+                    .frame(width: 44, height: 44)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+            }
+            .buttonStyle(.plain)
+
+            // FAB — Log / Add menu
+            Menu {
+                Button { showLogSheet = true } label: {
+                    Label("Log Sighting", systemImage: "mappin.and.ellipse")
+                }
+                Button { showAddZoneSheet = true } label: {
+                    Label("Add Zone", systemImage: "square.dashed")
+                }
+                if !viewModel.zones.isEmpty {
+                    Button { showZonePicker = true } label: {
+                        Label("Draw Zone Boundary", systemImage: "pencil.tip.crop.circle")
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 15, weight: .bold))
+                    Text("Log")
+                        .font(DSFont.subhead.bold())
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, DSSpace.lg)
+                .frame(height: 48)
+                .background(
+                    LinearGradient(
+                        colors: [Color.dsPrimary, Color.dsPrimary.opacity(0.85)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(Capsule())
+                .shadow(color: Color.dsPrimary.opacity(0.45), radius: 8, x: 0, y: 4)
+            }
+        }
+    }
+
+    // MARK: - Draw mode banner
+
+    private var drawModeBanner: some View {
+        VStack(spacing: 0) {
+            // Status line
+            HStack(spacing: DSSpace.md) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.dsStatusActive)
+                            .frame(width: 8, height: 8)
+                        Text("Drawing boundary")
+                            .font(DSFont.subhead.bold())
+                            .foregroundStyle(Color.primary)
+                    }
+                    Text("\(drawVertices.count) vertices · tap map to add points")
+                        .font(DSFont.caption)
+                        .foregroundStyle(Color.secondary)
+                }
+                Spacer()
+                if !drawVertices.isEmpty {
+                    Button {
+                        drawVertices.removeLast()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.uturn.backward")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("Undo")
+                                .font(DSFont.callout.weight(.semibold))
+                        }
+                        .foregroundStyle(Color.primary)
+                        .padding(.horizontal, DSSpace.md)
+                        .padding(.vertical, 8)
+                        .background(.regularMaterial)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, DSSpace.lg)
+            .padding(.vertical, DSSpace.md)
+            .background(.regularMaterial)
+
+            Divider().opacity(0.5)
+
+            // Action buttons
+            HStack(spacing: DSSpace.md) {
+                Button("Cancel") {
+                    drawingZone = nil; drawVertices = []
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(Color.dsStatusActive.opacity(0.1))
+                .foregroundStyle(Color.dsStatusActive)
+                .font(DSFont.subhead.weight(.semibold))
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+
+                Button("Save Polygon") { savePolygon() }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(drawVertices.count >= 3 ? Color.dsPrimary : Color.secondary.opacity(0.3))
+                    .foregroundStyle(.white)
+                    .font(DSFont.subhead.weight(.semibold))
+                    .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+                    .disabled(drawVertices.count < 3)
+            }
+            .padding(.horizontal, DSSpace.lg)
+            .padding(.vertical, DSSpace.md)
+            .background(.regularMaterial)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var mapTypeIcon: String {
         switch viewModel.mapType {
-        case .hybrid: return "Hybrid"
-        case .standard: return "Standard"
-        default: return "Satellite"
+        case .hybrid:   return "globe.americas.fill"
+        case .standard: return "map.fill"
+        default:        return "globe"
         }
     }
 
@@ -304,6 +457,8 @@ struct MapContainerView: View {
         }
     }
 }
+
+// MARK: - Zone Picker Sheet
 
 private struct ZonePickerSheet: View {
     @Environment(\.dismiss) private var dismiss

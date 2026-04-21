@@ -49,7 +49,7 @@ struct MapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         let centre = CLLocationCoordinate2D(latitude: -14.7, longitude: 143.7)
-        mapView.setRegion(MKCoordinateRegion(center: centre, latitudinalMeters: 50000, longitudinalMeters: 50000), animated: false)
+        mapView.setRegion(MKCoordinateRegion(center: centre, latitudinalMeters: 12000, longitudinalMeters: 12000), animated: false)
         mapView.showsUserLocation = true
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
         tap.delegate = context.coordinator

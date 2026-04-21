@@ -81,6 +81,7 @@ struct SightingListView: View {
 private struct SightingCard: View {
     let sighting: SightingLog
     let distance: String?
+    @State private var appeared = false
 
     private var species: InvasiveSpecies {
         InvasiveSpecies.from(legacyVariant: sighting.variant ?? "")
@@ -158,5 +159,12 @@ private struct SightingCard: View {
                 .strokeBorder(Color.dsDivider.opacity(0.6), lineWidth: 0.75)
         )
         .shadow(color: Color.dsInk.opacity(0.04), radius: 3, x: 0, y: 1)
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 10)
+        .onAppear {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                appeared = true
+            }
+        }
     }
 }

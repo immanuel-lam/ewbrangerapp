@@ -30,17 +30,17 @@ struct PortStewartZones {
     ]
 
     static let defaultChecklist: [PatrolChecklistItem] = [
-        PatrolChecklistItem(label: "Check GPS is recording"),
-        PatrolChecklistItem(label: "Photograph new infestations"),
-        PatrolChecklistItem(label: "Record all invasive plant sightings"),
-        PatrolChecklistItem(label: "Check previous treatment sites"),
-        PatrolChecklistItem(label: "Note regrowth on treated plants"),
-        PatrolChecklistItem(label: "Check herbicide supply before departing")
+        PatrolChecklistItem(label: "Check GPS is recording", timeEstimateMins: 2),
+        PatrolChecklistItem(label: "Photograph new infestations", timeEstimateMins: 15),
+        PatrolChecklistItem(label: "Record all invasive plant sightings", timeEstimateMins: 20),
+        PatrolChecklistItem(label: "Check previous treatment sites", timeEstimateMins: 15),
+        PatrolChecklistItem(label: "Note regrowth on treated plants", timeEstimateMins: 10),
+        PatrolChecklistItem(label: "Check herbicide supply before departing", timeEstimateMins: 5)
     ]
 
     static func defaultChecklist(for area: String) -> [PatrolChecklistItem] {
         var items = Self.defaultChecklist
-        items.insert(PatrolChecklistItem(label: "Walk full boundary of \(area)"), at: 0)
+        items.insert(PatrolChecklistItem(label: "Walk full boundary of \(area)", timeEstimateMins: 20), at: 0)
         return items
     }
 }

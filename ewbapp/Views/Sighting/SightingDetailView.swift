@@ -96,6 +96,13 @@ struct SightingDetailView: View {
                             VStack(spacing: DSSpace.sm) {
                                 ForEach(viewModel.treatments, id: \.id) { treatment in
                                     TreatmentRow(treatment: treatment)
+                                    if let notes = treatment.outcomeNotes, notes.hasPrefix("📷 After:") {
+                                        BeforeAfterCard(
+                                            sighting: viewModel.sighting,
+                                            treatmentNotes: notes,
+                                            species: viewModel.species
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -262,10 +269,94 @@ struct TreatmentRow: View {
                     }
                 }
                 if let notes = treatment.outcomeNotes, !notes.isEmpty {
-                    Text(notes)
-                        .font(DSFont.caption)
-                        .foregroundStyle(Color.dsInk2)
+                    let display = notes.hasPrefix("📷 After:") ? stripPhotoPrefix(notes) : notes
+                    if !display.isEmpty {
+                        Text(display)
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk2)
+                    }
                 }
+            }
+        }
+        .padding(DSSpace.md)
+        .background(Color.dsSurface)
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+    }
+
+    private func stripPhotoPrefix(_ notes: String) -> String {
+        guard let range = notes.range(of: ". ") else { return "" }
+        return String(notes[range.upperBound...])
+    }
+}
+
+// MARK: - Before/After Card
+
+private struct BeforeAfterCard: View {
+    let sighting: SightingLog
+    let treatmentNotes: String
+    let species: InvasiveSpecies
+
+    private var afterCount: Int {
+        guard let range = treatmentNotes.range(of: "📷 After: "),
+              let end = treatmentNotes[range.upperBound...].range(of: " photo") else { return 0 }
+        return Int(treatmentNotes[range.upperBound..<end.lowerBound]) ?? 0
+    }
+
+    var body: some View {
+        VStack(spacing: DSSpace.sm) {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.dsAccent)
+                Text("Before / After")
+                    .font(DSFont.callout)
+                    .foregroundStyle(Color.dsInk)
+                Spacer()
+                Text("Comparison")
+                    .font(DSFont.badge)
+                    .foregroundStyle(Color.dsAccent)
+                    .padding(.horizontal, DSSpace.sm)
+                    .padding(.vertical, 3)
+                    .background(Color.dsAccent.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+
+            HStack(spacing: DSSpace.md) {
+                // Before column
+                VStack(spacing: DSSpace.sm) {
+                    ZStack {
+                        Circle()
+                            .fill(species.color.opacity(0.15))
+                            .frame(width: 40, height: 40)
+                        Image(systemName: species.iconName)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(species.color)
+                    }
+                    Text("Before").font(DSFont.caption).foregroundStyle(Color.dsInk)
+                    Text("Sighting logged").font(DSFont.badge).foregroundStyle(Color.dsInk3)
+                    if let date = sighting.createdAt {
+                        Text(date, style: .date).font(DSFont.badge).foregroundStyle(Color.dsInk3)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Divider().overlay(Color.dsDivider)
+
+                // After column
+                VStack(spacing: DSSpace.sm) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.dsStatusCleared.opacity(0.15))
+                            .frame(width: 40, height: 40)
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.dsStatusCleared)
+                    }
+                    Text("After").font(DSFont.caption).foregroundStyle(Color.dsInk)
+                    Text("Treatment applied").font(DSFont.badge).foregroundStyle(Color.dsInk3)
+                    Text("\(afterCount) photo\(afterCount == 1 ? "" : "s")").font(DSFont.badge).foregroundStyle(Color.dsInk3)
+                }
+                .frame(maxWidth: .infinity)
             }
         }
         .padding(DSSpace.md)

@@ -92,4 +92,40 @@ Do not add: Supabase cloud sync, real API calls, MapKit paid tiers, push notific
 
 ## Tab structure
 
-`MainTabView` has 5 tabs: Map, Sightings, Patrol, Tasks, More. `MoreView` (in `MainTabView.swift`) is the navigation hub for Guide, Protocol, Zones, Dashboard, Supplies, End of Day Sync, Settings.
+`MainTabView` has **4 tabs**: Map, Activity (Sightings/Patrols/Tasks segments), Guide (species field guide), Hub. `HubView` replaced `MoreView` — it is a tile grid linking to Dashboard, Supplies, Day Sync, Zones, Cloud Sync, Handover, and Settings.
+
+## Design system
+
+`Views/DesignSystem.swift` — warm Australian bushland palette. Key tokens:
+- `Color.dsPrimary` (#2A5C3F), `Color.dsAccent` (#C4692A), `Color.dsBackground` (#F7F3EC)
+- `DSFont.*`: largeTitle / title / headline / subhead / body / callout / footnote / caption / badge / mono
+- `DSSpace.*`: xs / sm / md / lg / xl / xxxl
+- `DSRadius.*`: xs / sm / md / lg
+- `.dsCard()` / `.dsElevatedCard()` view modifiers
+
+## Species model
+
+`InvasiveSpecies` enum (in `Models/Enums/`) replaces `LantanaVariant`. Cases: lantana, rubberVine, pricklyAcacia, sicklepod, giantRatsTailGrass, pondApple, unknown. `InvasiveSpecies.from(legacyVariant:)` maps old Lantana variant strings → `.lantana`. CoreData still stores species as String via `variant` attribute — no schema migration needed.
+
+## Demo features (branch: demonewui)
+
+These are demo/showcase views not wired to real V3 services:
+
+- **`Demo/DemoMeshSyncView.swift`** — animated Bluetooth mesh sync with peer discovery. After completion, shows a "Zone Conflicts" link to `ConflictResolverView`.
+- **`Demo/DemoLiveSyncView.swift`** — fake V3 cloud sync dashboard. Shows Supabase DB + Storage (primary) and S3 (cold backup replica). Live CoreData counts per table, Starlink-style jittery MB/s upload speed (2–14 MB/s), DB snapshot export simulation. Accessible from Hub → Cloud Sync.
+- **`Views/Hub/ConflictResolverView.swift`** — demo mesh sync conflict resolver. Shows 3 fake zone boundary conflicts with Keep Mine / Keep Theirs / Merge actions. Accessible from Day Sync after sync completes.
+- **`Views/Hub/ShiftHandoverView.swift`** — end-of-shift summary card. Reads live CoreData: today's sightings, untreated count, species breakdown, patrol duration/checklist %, pesticide usage, open/overdue tasks, sync status. ShareLink exports a formatted text summary. Accessible from Hub → Handover.
+- **`Views/Map/BloomCalendarView.swift`** — seasonal bloom risk calendar for all 6 invasive species. Shows per-month risk level (HIGH/MODERATE/Low) based on hardcoded Cape York phenology data. Accessible via "Bloom" capsule button in map top bar.
+- **`Views/Hub/ConflictResolverView.swift`** — see above.
+
+## Patrol checklist stamina metric
+
+`PatrolChecklistItem` (in `Models/Domain/`) now has `timeEstimateMins: Int` (default 10). `PortStewartZones.defaultChecklist` includes realistic estimates per task. `PatrolViewModel` exposes `plannedMinutes` and `elapsedMinutes`. `ActivePatrolView` shows a two-tone time-budget bar (green = completed item time, amber = remaining) with a "Running long" warning at 85% of planned time. `ChecklistItemRow` shows a time badge on incomplete items.
+
+## Lantana biocontrol prompt
+
+`LogSightingView` shows `BiocontrolPromptCard` (amber-tinted card) when `selectedSpecies == .lantana`. Three-button segmented row: Observed / Not Seen / Unsure. If "Observed", shows ⚠️ warning about delaying foliar spray. `LogSightingViewModel.BiocontrolObservation` enum appends biocontrol data to notes on save.
+
+## Before/After photo comparison
+
+`TreatmentEntryView` has an "After Photos" section that appends fake filenames. When saved, prepends `"📷 After: N photo(s). "` to outcomeNotes. `SightingDetailView` detects this prefix and shows a `BeforeAfterCard` below the `TreatmentRow` — species icon (before) vs green checkmark (after) in a two-column comparison card.

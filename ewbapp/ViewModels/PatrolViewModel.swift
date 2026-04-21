@@ -73,4 +73,13 @@ final class PatrolViewModel: ObservableObject {
         let completed = activeChecklistItems.filter { $0.isComplete }.count
         return Double(completed) / Double(activeChecklistItems.count)
     }
+
+    var plannedMinutes: Int {
+        activeChecklistItems.reduce(0) { $0 + $1.timeEstimateMins }
+    }
+
+    var elapsedMinutes: Int {
+        guard let startTime = activePatrol?.startTime else { return 0 }
+        return Int(Date().timeIntervalSince(startTime) / 60)
+    }
 }

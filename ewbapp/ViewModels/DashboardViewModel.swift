@@ -3,13 +3,20 @@ import Foundation
 import CoreData
 import SwiftUI
 
+struct MonthlySightingEntry: Identifiable {
+    var id: String { "\(date.timeIntervalSince1970)-\(variant)" }
+    let date: Date
+    let count: Int
+    let variant: String
+}
+
 @MainActor
 final class DashboardViewModel: ObservableObject {
     @Published var totalSightings: Int = 0
     @Published var sightingsThisMonth: Int = 0
     @Published var treatmentsThisMonth: Int = 0
     @Published var zoneStatusCounts: [String: Int] = [:]
-    @Published var monthlySightingData: [(date: Date, count: Int, variant: String)] = []
+    @Published var monthlySightingData: [MonthlySightingEntry] = []
     @Published var pendingSyncCount: Int = 0
     @Published var lastSyncDate: Date?
     @Published var rangerSightingCounts: [(name: String, count: Int)] = []
@@ -45,7 +52,12 @@ final class DashboardViewModel: ObservableObject {
         zoneStatusCounts = Dictionary(grouping: zones, by: { $0.status ?? "unknown" })
             .mapValues { $0.count }
 
-        buildMonthlySightingData(context: context, now: now)
+        // Delay chart data slightly so bars animate up from baseline
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
+                self.buildMonthlySightingData(context: context, now: now)
+            }
+        }
 
         pendingSyncCount = (try? context.fetchAll(SyncQueue.self))?.count ?? 0
         lastSyncDate = UserDefaults.standard.object(forKey: "lastSyncTimestamp") as? Date
@@ -69,7 +81,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private func buildMonthlySightingData(context: NSManagedObjectContext, now: Date) {
-        var data: [(date: Date, count: Int, variant: String)] = []
+        var data: [MonthlySightingEntry] = []
         let calendar = Calendar.current
         for monthOffset in (0..<6).reversed() {
             guard let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)),
@@ -80,7 +92,7 @@ final class DashboardViewModel: ObservableObject {
             let byVariant = Dictionary(grouping: monthSightings, by: { $0.variant ?? "unknown" })
             for (variant, sightings) in byVariant {
                 let label = InvasiveSpecies.from(legacyVariant: variant).displayName
-                data.append((date: monthStart, count: sightings.count, variant: label))
+                data.append(MonthlySightingEntry(date: monthStart, count: sightings.count, variant: label))
             }
         }
         monthlySightingData = data

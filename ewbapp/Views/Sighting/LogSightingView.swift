@@ -25,6 +25,10 @@ struct LogSightingView: View {
 
                     SpeciesPickerView(selectedSpecies: $viewModel.selectedSpecies)
 
+                    if viewModel.selectedSpecies == .lantana {
+                        BiocontrolPromptCard(observation: $viewModel.biocontrolObservation)
+                    }
+
                     SizePickerView(selectedSize: $viewModel.selectedSize)
 
                     PhotoCaptureView(photoFilenames: $viewModel.photoFilenames)
@@ -81,5 +85,77 @@ struct LogSightingView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Lantana Biocontrol Prompt Card
+
+struct BiocontrolPromptCard: View {
+    @Binding var observation: LogSightingViewModel.BiocontrolObservation
+
+    var body: some View {
+        VStack(spacing: DSSpace.md) {
+            HStack(spacing: DSSpace.sm) {
+                Image(systemName: "ant.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color(hex: "856404"))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Lantana Bug Check")
+                        .font(DSFont.headline)
+                        .foregroundStyle(Color.dsInk)
+                    Text("Is Aconophora compressa (Lantana bug) present?")
+                        .font(DSFont.callout)
+                        .foregroundStyle(Color.dsInk3)
+                }
+                Spacer()
+            }
+
+            HStack(spacing: DSSpace.sm) {
+                ForEach([
+                    (LogSightingViewModel.BiocontrolObservation.observed, "Observed"),
+                    (.notObserved, "Not Seen"),
+                    (.unsure, "Unsure")
+                ], id: \.0) { value, label in
+                    Button {
+                        observation = value
+                    } label: {
+                        Text(label)
+                            .font(DSFont.callout)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundStyle(observation == value ? .white : Color.dsInk2)
+                            .background(observation == value ? Color.dsPrimary : Color.dsSurface)
+                            .clipShape(RoundedRectangle(cornerRadius: DSRadius.xs, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DSRadius.xs, style: .continuous)
+                                    .strokeBorder(Color.dsDivider, lineWidth: 0.75)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if observation == .observed {
+                HStack(spacing: DSSpace.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.dsAccent)
+                    Text("Biocontrol present — consider delaying foliar spray")
+                        .font(DSFont.caption)
+                        .foregroundStyle(Color.dsAccent)
+                    Spacer()
+                }
+                .padding(DSSpace.md)
+                .background(Color.dsAccent.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+            }
+        }
+        .padding(DSSpace.md)
+        .background(Color(hex: "FFF3CD"))
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous)
+                .strokeBorder(Color(hex: "856404"), lineWidth: 0.75)
+        )
     }
 }

@@ -13,6 +13,7 @@ struct TreatmentEntryView: View {
     @State private var hasFollowUp = false
     @State private var followUpDate = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
     @State private var isSaving = false
+    @State private var afterPhotoFilenames: [String] = []
 
     var body: some View {
         NavigationStack {
@@ -34,6 +35,39 @@ struct TreatmentEntryView: View {
                 Section("Outcome Notes") {
                     TextField("Observations, coverage, etc. (optional)", text: $outcomeNotes, axis: .vertical)
                         .lineLimit(3...6)
+                }
+
+                Section("After Photos (optional)") {
+                    HStack {
+                        Text("After photos")
+                            .font(DSFont.callout)
+                            .foregroundStyle(Color.dsInk)
+                        Spacer()
+                        if afterPhotoFilenames.count > 0 {
+                            Text("\(afterPhotoFilenames.count) attached")
+                                .font(DSFont.badge)
+                                .foregroundStyle(Color.dsPrimary)
+                                .padding(.horizontal, DSSpace.sm)
+                                .padding(.vertical, 3)
+                                .background(Color.dsPrimarySoft)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(.vertical, 4)
+
+                    Button {
+                        afterPhotoFilenames.append("after_\(UUID().uuidString).heif")
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("Attach After Photo")
+                                .font(DSFont.callout)
+                        }
+                        .foregroundStyle(Color.dsPrimary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 8)
+                    }
                 }
 
                 Section("Follow-up") {
@@ -62,15 +96,19 @@ struct TreatmentEntryView: View {
         isSaving = true
         let repo = TreatmentRepository(persistence: appEnv.persistence)
         Task {
+            var finalNotes = outcomeNotes
+            if !afterPhotoFilenames.isEmpty {
+                let prefix = "📷 After: \(afterPhotoFilenames.count) photo(s). "
+                finalNotes = prefix + outcomeNotes
+            }
             let treatment = try? await repo.addTreatment(
                 to: sighting,
                 method: selectedMethod,
                 herbicideProduct: herbicideProduct.isEmpty ? nil : herbicideProduct,
-                outcomeNotes: outcomeNotes.isEmpty ? nil : outcomeNotes,
+                outcomeNotes: finalNotes.isEmpty ? nil : finalNotes,
                 followUpDate: hasFollowUp ? followUpDate : nil,
                 rangerID: rangerID
             )
-            // Auto-create follow-up task if a follow-up date was set
             if let treatment {
                 let taskRepo = TaskRepository(persistence: appEnv.persistence)
                 try? await taskRepo.createFollowUpTask(for: treatment, rangerID: rangerID)

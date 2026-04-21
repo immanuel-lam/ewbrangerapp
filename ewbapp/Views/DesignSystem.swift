@@ -351,6 +351,8 @@ struct DSStatCard: View {
             Text(value)
                 .font(DSFont.title)
                 .foregroundStyle(Color.dsInk)
+                .contentTransition(.numericText())
+                .animation(.spring(duration: 0.5), value: value)
             Text(title)
                 .font(DSFont.caption)
                 .foregroundStyle(Color.dsInk3)
