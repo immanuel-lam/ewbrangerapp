@@ -12,8 +12,7 @@ struct PesticideListView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 // Low-stock alert banner
                 if !viewModel.lowStockItems.isEmpty {
                     HStack(spacing: DSSpace.sm) {
@@ -46,7 +45,6 @@ struct PesticideListView: View {
                 AddStockView(viewModel: viewModel)
             }
             .onAppear { viewModel.load() }
-        }
     }
 }
 
@@ -98,7 +96,10 @@ struct AddStockView: View {
             }
             .navigationTitle("Add Product")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.dsPrimary)
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
                         Task {
@@ -112,6 +113,7 @@ struct AddStockView: View {
                         }
                     }
                     .disabled(productName.isEmpty)
+                    .foregroundStyle(Color.dsPrimary)
                 }
             }
         }

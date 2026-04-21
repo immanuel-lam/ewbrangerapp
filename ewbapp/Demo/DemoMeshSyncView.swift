@@ -34,20 +34,19 @@ struct DemoMeshSyncView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
+        VStack(spacing: 20) {
                 // Status banner
                 HStack(spacing: 8) {
                     Circle()
                         .fill(bannerColor)
                         .frame(width: 10, height: 10)
                     Text(bannerText)
-                        .font(.callout)
+                        .font(DSFont.callout)
                     Spacer()
                 }
                 .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .background(Color.dsSurface)
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
                 .animation(.easeInOut, value: phase)
 
                 if !showPeers {
@@ -55,15 +54,15 @@ struct DemoMeshSyncView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "antenna.radiowaves.left.and.right")
                             .font(.system(size: 48))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                         Text("Tap Start Sync to find nearby rangers")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(Color.dsInk3)
                     }
                     Spacer()
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Nearby Rangers")
-                            .font(.headline)
+                            .font(DSFont.headline)
                             .padding(.horizontal)
 
                         DemoPeerRow(name: peers[0], status: peer1Status, progress: peer1Progress)
@@ -76,9 +75,9 @@ struct DemoMeshSyncView: View {
 
                 if let summary {
                     Text(summary)
-                        .font(.callout)
+                        .font(DSFont.callout)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(Color.dsInk3)
                         .padding(.horizontal)
                         .transition(.opacity)
                 }
@@ -86,7 +85,7 @@ struct DemoMeshSyncView: View {
                 LargeButton(
                     title: buttonTitle,
                     action: { if phase == .idle || phase == .done { runFakeSync() } },
-                    color: phase == .done ? .green : .accentColor
+                    color: phase == .done ? Color.dsStatusCleared : Color.dsPrimary
                 )
                 .disabled(phase == .syncing || phase == .discovering)
                 .padding(.horizontal)
@@ -94,16 +93,15 @@ struct DemoMeshSyncView: View {
             }
             .padding(.top)
             .navigationTitle("End of Day Sync")
-        }
     }
 
     // MARK: - Computed
     private var bannerColor: Color {
         switch phase {
-        case .idle:        return .gray
-        case .discovering: return .orange
-        case .syncing:     return .blue
-        case .done:        return .green
+        case .idle:        return Color.dsInk3
+        case .discovering: return Color.dsStatusTreat
+        case .syncing:     return Color.dsPrimary
+        case .done:        return Color.dsStatusCleared
         }
     }
 
@@ -209,27 +207,27 @@ private struct DemoPeerRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Image(systemName: "iphone.circle.fill")
-                    .foregroundColor(.blue)
+                    .foregroundStyle(Color.dsPrimary)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(name).font(.subheadline.bold())
-                    Text(status).font(.caption).foregroundColor(.secondary)
+                    Text(name).font(DSFont.subhead.bold())
+                    Text(status).font(DSFont.caption).foregroundStyle(Color.dsInk3)
                 }
                 Spacer()
                 if progress >= 1.0 {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundStyle(Color.dsStatusCleared)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
             if progress > 0 && progress < 1.0 {
                 ProgressView(value: progress)
-                    .tint(.blue)
+                    .tint(Color.dsPrimary)
                     .transition(.opacity)
             }
         }
-        .padding(12)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .padding(DSSpace.md)
+        .background(Color.dsSurface)
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
         .padding(.horizontal)
         .animation(.easeInOut, value: progress)
     }

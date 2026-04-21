@@ -106,6 +106,7 @@ final class SettingsViewModel: ObservableObject {
             try? ctx.save()
         }
         UserDefaults.standard.removeObject(forKey: "demoDataSeeded_v2")
+        UserDefaults.standard.removeObject(forKey: "demoDataSeeded_v3")
         UserDefaults.standard.removeObject(forKey: "lastSyncTimestamp")
         DemoSeeder.seed(in: persistence)
     }

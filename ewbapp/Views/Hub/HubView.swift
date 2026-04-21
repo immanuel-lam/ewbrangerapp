@@ -7,9 +7,10 @@ struct HubView: View {
     @EnvironmentObject var appEnv: AppEnvironment
 
     private var ranger: RangerProfile? {
-        try? appEnv.persistence.mainContext.fetchFirst(
+        guard let id = appEnv.authManager.currentRangerID else { return nil }
+        return try? appEnv.persistence.mainContext.fetchFirst(
             RangerProfile.self,
-            predicate: NSPredicate(format: "isCurrentDevice == YES")
+            predicate: NSPredicate(format: "id == %@", id as CVarArg)
         )
     }
 
@@ -29,41 +30,25 @@ struct HubView: View {
                             subtitle: "Stats & progress",
                             icon: "chart.bar.fill",
                             accent: Color.dsPrimary
-                        ) {
-                            NavigationLink(destination: DashboardView()) {
-                                Color.clear
-                            }
-                        }
+                        ) { DashboardView() }
                         HubTile(
                             title: "Supplies",
                             subtitle: "Herbicide stock",
                             icon: "flask.fill",
                             accent: Color.dsAccent
-                        ) {
-                            NavigationLink(destination: PesticideListView()) {
-                                Color.clear
-                            }
-                        }
+                        ) { PesticideListView() }
                         HubTile(
                             title: "Day Sync",
                             subtitle: "Mesh sync devices",
                             icon: "antenna.radiowaves.left.and.right",
                             accent: Color(hex: "2E7A6B")
-                        ) {
-                            NavigationLink(destination: DemoMeshSyncView()) {
-                                Color.clear
-                            }
-                        }
+                        ) { DemoMeshSyncView() }
                         HubTile(
                             title: "Zones",
                             subtitle: "Manage areas",
                             icon: "square.dashed",
                             accent: Color(hex: "7B5EA8")
-                        ) {
-                            NavigationLink(destination: ZoneListView()) {
-                                Color.clear
-                            }
-                        }
+                        ) { ZoneListView() }
                     }
                     .padding(.horizontal, DSSpace.lg)
                     .padding(.top, DSSpace.lg)

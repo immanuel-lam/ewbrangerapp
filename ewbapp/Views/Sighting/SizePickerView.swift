@@ -6,7 +6,7 @@ struct SizePickerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Infestation Size")
-                .font(.headline)
+                .font(DSFont.headline)
             HStack(spacing: 8) {
                 ForEach(InfestationSize.allCases, id: \.self) { size in
                     SizeButton(size: size, isSelected: selectedSize == size) {
@@ -27,16 +27,16 @@ struct SizeButton: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Text(size.displayName)
-                    .font(.headline)
+                    .font(DSFont.headline)
                 Text(size.areaDescription)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
+                    .font(DSFont.caption)
+                    .foregroundStyle(isSelected ? Color.white.opacity(0.8) : Color.dsInk3)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 64)
-            .background(isSelected ? Color.green : Color(.systemGray5))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(12)
+            .background(isSelected ? Color.dsStatusCleared : Color.dsSurface)
+            .foregroundStyle(isSelected ? Color.white : Color.dsInk)
+            .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
     }

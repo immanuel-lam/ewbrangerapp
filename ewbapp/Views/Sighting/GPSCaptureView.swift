@@ -9,46 +9,46 @@ struct GPSCaptureView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Location")
-                .font(.headline)
+                .font(DSFont.headline)
             HStack {
                 if let location = location {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(String(format: "%.6f, %.6f", location.coordinate.latitude, location.coordinate.longitude))
-                            .font(.system(.callout, design: .monospaced))
+                            .font(DSFont.mono)
                         HStack(spacing: 4) {
                             Circle()
                                 .fill(accuracyColor)
                                 .frame(width: 8, height: 8)
                             Text(String(format: "±%.0fm", location.horizontalAccuracy))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(DSFont.caption)
+                                .foregroundStyle(Color.dsInk3)
                         }
                     }
                 } else {
                     HStack(spacing: 8) {
                         ProgressView()
                         Text("Acquiring GPS…")
-                            .font(.callout)
-                            .foregroundColor(.secondary)
+                            .font(DSFont.callout)
+                            .foregroundStyle(Color.dsInk3)
                     }
                 }
                 Spacer()
                 Button("Re-capture", action: onRecapture)
-                    .font(.callout)
+                    .font(DSFont.callout)
                     .buttonStyle(.bordered)
             }
-            .padding(12)
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
+            .padding(DSSpace.md)
+            .background(Color.dsSurface)
+            .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
         }
     }
 
     private var accuracyColor: Color {
         switch accuracyLevel {
-        case .good: return .green
-        case .fair: return .yellow
-        case .poor: return .red
-        case .unknown: return .gray
+        case .good: return Color.dsStatusCleared
+        case .fair: return Color.dsStatusTreat
+        case .poor: return Color.dsStatusActive
+        case .unknown: return Color.dsInk3
         }
     }
 }

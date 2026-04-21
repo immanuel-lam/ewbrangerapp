@@ -19,18 +19,15 @@ struct SpeciesGuideView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     // Header summary
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(InvasiveSpeciesContent.all.count) tracked species")
-                                .font(DSFont.callout)
-                                .foregroundStyle(Color.dsInk2)
-                            Text("Cape York Peninsula")
-                                .font(DSFont.caption)
-                                .foregroundStyle(Color.dsInk3)
-                        }
-                        Spacer()
-                        // Category legend
-                        HStack(spacing: DSSpace.sm) {
+                    VStack(alignment: .leading, spacing: DSSpace.xs) {
+                        Text("\(InvasiveSpeciesContent.all.count) tracked species")
+                            .font(DSFont.callout)
+                            .foregroundStyle(Color.dsInk2)
+                        Text("Cape York Peninsula")
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
+                        // Category legend — on its own line so it never clips
+                        HStack(spacing: DSSpace.md) {
                             ForEach([SpeciesCategory.shrub, .vine, .tree, .grass], id: \.rawValue) { cat in
                                 HStack(spacing: 3) {
                                     Image(systemName: cat.iconName)
@@ -42,7 +39,9 @@ struct SpeciesGuideView: View {
                                 }
                             }
                         }
+                        .padding(.top, 2)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, DSSpace.lg)
                     .padding(.vertical, DSSpace.md)
 
@@ -121,14 +120,15 @@ private struct SpeciesGuideRow: View {
                     }
                     .foregroundStyle(Color.dsInkMuted)
                 }
-                // Control method pills
+                // Control method pills (max 2 to avoid overflow)
                 HStack(spacing: 4) {
-                    ForEach(info.controlMethods.prefix(3), id: \.self) { method in
+                    ForEach(info.controlMethods.prefix(2), id: \.self) { method in
                         HStack(spacing: 3) {
                             Image(systemName: method.systemIconName)
                                 .font(.system(size: 9, weight: .semibold))
                             Text(method.displayName)
                                 .font(DSFont.badge)
+                                .lineLimit(1)
                         }
                         .foregroundStyle(Color.dsPrimary)
                         .padding(.horizontal, 5)
@@ -136,6 +136,16 @@ private struct SpeciesGuideRow: View {
                         .background(Color.dsPrimarySoft)
                         .clipShape(Capsule())
                     }
+                    if info.controlMethods.count > 2 {
+                        Text("+\(info.controlMethods.count - 2)")
+                            .font(DSFont.badge)
+                            .foregroundStyle(Color.dsInk3)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Color.dsSurface)
+                            .clipShape(Capsule())
+                    }
+                    Spacer(minLength: 0)
                 }
             }
 

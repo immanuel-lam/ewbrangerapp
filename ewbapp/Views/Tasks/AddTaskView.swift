@@ -26,7 +26,7 @@ struct AddTaskView: View {
                     Picker("Priority", selection: $priority) {
                         ForEach(TaskPriority.allCases, id: \.self) { p in
                             Label(p.displayName, systemImage: p.icon)
-                                .foregroundColor(p.color)
+                                .foregroundStyle(p.color)
                                 .tag(p)
                         }
                     }
@@ -60,10 +60,12 @@ struct AddTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.dsPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") { save() }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
+                        .foregroundStyle(Color.dsPrimary)
                 }
             }
         }
@@ -121,6 +123,7 @@ struct EditTaskView: View {
                     Picker("Priority", selection: $priority) {
                         ForEach(TaskPriority.allCases, id: \.self) { p in
                             Label(p.displayName, systemImage: p.icon)
+                                .foregroundStyle(p.color)
                                 .tag(p)
                         }
                     }
@@ -137,8 +140,8 @@ struct EditTaskView: View {
                 if let treatment = task.sourceTreatment {
                     Section("Source") {
                         Label("Auto-generated from \(TreatmentMethod(rawValue: treatment.method ?? "")?.displayName ?? "treatment")", systemImage: "wand.and.stars")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
                     }
                 }
             }
@@ -147,10 +150,12 @@ struct EditTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.dsPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
+                        .foregroundStyle(Color.dsPrimary)
                 }
             }
         }
