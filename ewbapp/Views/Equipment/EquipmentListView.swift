@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct EquipmentListView: View {
-    @EnvironmentObject var appEnv: AppEnvironment
     @StateObject private var viewModel: EquipmentViewModel
     @State private var showAddEquipment = false
     @State private var selectedEquipment: Equipment?

@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct HazardLogView: View {
-    @EnvironmentObject var appEnv: AppEnvironment
     @StateObject private var viewModel: HazardViewModel
     @State private var showLogSheet = false
 
@@ -13,52 +12,49 @@ struct HazardLogView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.hazards.isEmpty {
-                    DSEmptyState(
-                        icon: "exclamationmark.triangle",
-                        title: "No hazards logged",
-                        message: "Tap + to log a hazard or incident."
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.hazards, id: \.id) { hazard in
-                            HazardCard(hazard: hazard)
-                                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.dsBackground)
-                        }
-                        .onDelete { offsets in
-                            offsets.map { viewModel.hazards[$0] }.forEach { viewModel.delete($0) }
-                        }
+        Group {
+            if viewModel.hazards.isEmpty {
+                DSEmptyState(
+                    icon: "exclamationmark.triangle",
+                    title: "No hazards logged",
+                    message: "Tap + to log a hazard or incident."
+                )
+            } else {
+                List {
+                    ForEach(viewModel.hazards, id: \.id) { hazard in
+                        HazardCard(hazard: hazard)
+                            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.dsBackground)
                     }
-                    .listStyle(.plain)
-                    .background(Color.dsBackground)
-                    .scrollContentBackground(.hidden)
-                }
-            }
-            .background(Color.dsBackground.ignoresSafeArea())
-            .navigationTitle("Hazards")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showLogSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundStyle(Color.dsPrimary)
+                    .onDelete { offsets in
+                        offsets.map { viewModel.hazards[$0] }.forEach { viewModel.delete($0) }
                     }
                 }
+                .listStyle(.plain)
+                .background(Color.dsBackground)
+                .scrollContentBackground(.hidden)
             }
-            .sheet(isPresented: $showLogSheet, onDismiss: { viewModel.load() }) {
-                LogHazardView()
+        }
+        .background(Color.dsBackground.ignoresSafeArea())
+        .navigationTitle("Hazards")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showLogSheet = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.dsPrimary)
+                }
             }
-            .onAppear {
-                viewModel.load()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { viewModel.load() }
-            }
+        }
+        .sheet(isPresented: $showLogSheet, onDismiss: { viewModel.load() }) {
+            LogHazardView()
+        }
+        .onAppear {
+            viewModel.load()
         }
     }
 }

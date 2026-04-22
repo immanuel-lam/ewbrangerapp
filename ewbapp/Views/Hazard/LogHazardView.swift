@@ -2,7 +2,6 @@ import SwiftUI
 
 struct LogHazardView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var appEnv: AppEnvironment
     @StateObject private var viewModel: HazardViewModel
 
     init() {
