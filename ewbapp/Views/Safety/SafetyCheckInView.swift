@@ -19,6 +19,9 @@ struct SafetyCheckInView: View {
 
                     // MARK: Action Buttons
                     actionButtons
+
+                    // MARK: Demo Controls
+                    demoControls
                 }
                 .padding(.horizontal, DSSpace.lg)
                 .padding(.top, DSSpace.xl)
@@ -112,6 +115,72 @@ struct SafetyCheckInView: View {
                 }
             }
             .pickerStyle(.segmented)
+        }
+        .dsCard()
+    }
+
+    private var demoControls: some View {
+        VStack(alignment: .leading, spacing: DSSpace.sm) {
+            HStack(spacing: DSSpace.sm) {
+                Image(systemName: "testtube.2")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.dsInk3)
+                Text("Demo Controls")
+                    .font(DSFont.subhead)
+                    .foregroundStyle(Color.dsInk2)
+            }
+
+            Button {
+                withAnimation { vm.simulateTimerExpiry() }
+            } label: {
+                HStack(spacing: DSSpace.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.dsStatusActive)
+                    Text("Simulate Timer Expiry")
+                        .font(DSFont.callout)
+                        .foregroundStyle(Color.dsStatusActive)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.dsStatusActive.opacity(0.5))
+                }
+                .padding(.horizontal, DSSpace.md)
+                .frame(height: 46)
+                .background(Color.dsStatusActiveSoft)
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous)
+                        .strokeBorder(Color.dsStatusActive.opacity(0.2), lineWidth: 0.75)
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                withAnimation { vm.simulateSOSReceived() }
+            } label: {
+                HStack(spacing: DSSpace.sm) {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.dsAccent)
+                    Text("Simulate SOS Beacon Pickup")
+                        .font(DSFont.callout)
+                        .foregroundStyle(Color.dsAccent)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.dsAccent.opacity(0.5))
+                }
+                .padding(.horizontal, DSSpace.md)
+                .frame(height: 46)
+                .background(Color.dsStatusTreatSoft)
+                .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous)
+                        .strokeBorder(Color.dsAccent.opacity(0.2), lineWidth: 0.75)
+                )
+            }
+            .buttonStyle(.plain)
         }
         .dsCard()
     }

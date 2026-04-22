@@ -1,3 +1,4 @@
+import AudioToolbox
 import Foundation
 import UserNotifications
 import Combine
@@ -8,7 +9,15 @@ final class SafetyCheckInViewModel: ObservableObject {
     @Published var timeRemaining: TimeInterval = 0
     @Published var intervalMinutes: Int = 60
 
+    // SOS state
+    @Published var isSOSTriggered = false
+    @Published var receivedSOSFrom: String? = nil
+    @Published var sosDistance: String = "~120m"
+    @Published var sosBearing: Double = 0
+
     private var timer: Timer?
+    private var alarmTimer: Timer?
+    private var bearingTimer: Timer?
     private var totalTime: TimeInterval { TimeInterval(intervalMinutes * 60) }
 
     // MARK: - Computed
@@ -48,6 +57,41 @@ final class SafetyCheckInViewModel: ObservableObject {
         cancelNotifications()
     }
 
+    // MARK: - SOS
+
+    func triggerSOS() {
+        isActive = false
+        timer?.invalidate()
+        timer = nil
+        isSOSTriggered = true
+        startAlarm()
+    }
+
+    func dismissSOS() {
+        isSOSTriggered = false
+        stopAlarm()
+        cancelNotifications()
+    }
+
+    // MARK: - Demo helpers
+
+    func simulateTimerExpiry() {
+        triggerSOS()
+    }
+
+    func simulateSOSReceived() {
+        receivedSOSFrom = "Bob Smith"
+        sosDistance = "~120m"
+        sosBearing = 0
+        startBearingAnimation()
+    }
+
+    func dismissReceivedSOS() {
+        receivedSOSFrom = nil
+        stopBearingAnimation()
+        sosBearing = 0
+    }
+
     // MARK: - Private
 
     private func fireTimer() {
@@ -60,10 +104,46 @@ final class SafetyCheckInViewModel: ObservableObject {
                 } else {
                     self.timer?.invalidate()
                     self.timer = nil
-                    self.isActive = false
+                    self.triggerSOS()
                 }
             }
         }
+    }
+
+    private func startAlarm() {
+        // Fire immediately then repeat every 3 seconds
+        fireAlarmSound()
+        alarmTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.fireAlarmSound()
+            }
+        }
+    }
+
+    private func fireAlarmSound() {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+        AudioServicesPlaySystemSound(1005) // SOS-style alert tone
+    }
+
+    private func stopAlarm() {
+        alarmTimer?.invalidate()
+        alarmTimer = nil
+    }
+
+    private func startBearingAnimation() {
+        bearingTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                // Oscillate ±25° around a fixed bearing to simulate live directional update
+                let t = Date().timeIntervalSinceReferenceDate
+                self.sosBearing = 42 + sin(t * 0.8) * 25
+            }
+        }
+    }
+
+    private func stopBearingAnimation() {
+        bearingTimer?.invalidate()
+        bearingTimer = nil
     }
 
     private func scheduleNotification() {

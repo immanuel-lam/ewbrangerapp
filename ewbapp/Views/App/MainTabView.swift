@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var appEnv: AppEnvironment
+    @EnvironmentObject var safetyVM: SafetyCheckInViewModel
 
     var body: some View {
         TabView {
@@ -31,5 +32,22 @@ struct MainTabView: View {
                 }
         }
         .tint(Color.dsPrimary)
+        .overlay {
+            if safetyVM.isSOSTriggered {
+                SOSOverlayView(mode: .alarm) {
+                    safetyVM.dismissSOS()
+                }
+                .environmentObject(safetyVM)
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.3), value: safetyVM.isSOSTriggered)
+            } else if let ranger = safetyVM.receivedSOSFrom {
+                SOSOverlayView(mode: .rescue(rangerName: ranger)) {
+                    safetyVM.dismissReceivedSOS()
+                }
+                .environmentObject(safetyVM)
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.3), value: safetyVM.receivedSOSFrom)
+            }
+        }
     }
 }
