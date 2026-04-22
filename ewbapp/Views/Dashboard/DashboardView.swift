@@ -34,6 +34,11 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: DSSpace.lg) {
 
+                // Pesticide stock alert banner
+                if !pesticideViewModel.lowStockItems.isEmpty || !pesticideViewModel.criticalStockItems.isEmpty {
+                    PesticideAlertBanner(viewModel: pesticideViewModel)
+                }
+
                 // Pending sync banner
                 if viewModel.pendingSyncCount > 0 {
                     HStack(spacing: DSSpace.sm) {
@@ -216,6 +221,7 @@ struct DashboardView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             viewModel.load()
+            pesticideViewModel.load()
             withAnimation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.1)) {
                 statCardsAppeared = true
             }
