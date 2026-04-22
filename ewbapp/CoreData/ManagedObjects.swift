@@ -294,3 +294,14 @@ extension TreatmentRecord: Identifiable {}
 extension InfestationZone: Identifiable {}
 extension Equipment: Identifiable {}
 extension MaintenanceRecord: Identifiable {}
+
+extension Equipment {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<Equipment> {
+        return NSFetchRequest<Equipment>(entityName: "Equipment")
+    }
+}
+extension MaintenanceRecord {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<MaintenanceRecord> {
+        return NSFetchRequest<MaintenanceRecord>(entityName: "MaintenanceRecord")
+    }
+}
