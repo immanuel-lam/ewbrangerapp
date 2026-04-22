@@ -27,6 +27,9 @@ actor MeshSyncEngine: NSObject {
     @MainActor @Published var peerPhases: [MCPeerID: SyncPhase] = [:]
     @MainActor @Published var overallPhase: SyncPhase = .idle
 
+    /// Called on MainActor whenever a ranger_status message arrives from a peer.
+    @MainActor var onRangerStatusReceived: ((RangerStatus) -> Void)?
+
     private let persistence: PersistenceController
     private let myPeerID: MCPeerID
     private var session: MCSession?
@@ -67,6 +70,19 @@ actor MeshSyncEngine: NSObject {
             discoveredPeers = []
             peerPhases = [:]
         }
+    }
+
+    // MARK: - Ranger Status Broadcast
+
+    /// Broadcast a RangerStatus to all currently connected peers.
+    func broadcastRangerStatus(_ status: RangerStatus) {
+        guard let session = session, !session.connectedPeers.isEmpty else { return }
+        struct StatusMessage: Encodable {
+            let type: String
+            let status: RangerStatus
+        }
+        guard let data = try? JSONEncoder().encode(StatusMessage(type: "ranger_status", status: status)) else { return }
+        try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
     }
 
     // MARK: - Manifest
@@ -171,6 +187,13 @@ extension MeshSyncEngine: MCSessionDelegate {
         case "records":
             if let recordsData = try? JSONSerialization.data(withJSONObject: json["records"] ?? []) {
                 await receiveRecords(recordsData, from: peer)
+            }
+        case "ranger_status":
+            if let statusData = try? JSONSerialization.data(withJSONObject: json["status"] ?? [:]),
+               let status = try? JSONDecoder().decode(RangerStatus.self, from: statusData) {
+                await MainActor.run {
+                    self.onRangerStatusReceived?(status)
+                }
             }
         default:
             break
