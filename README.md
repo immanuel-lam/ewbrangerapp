@@ -189,34 +189,6 @@ Full design and architecture overhaul. Expanded from Lantana-only to 6 invasive 
 
 ---
 
-## demov3 Features
-
-The `demov3` branch adds 12 features on top of the `demov2` base:
-
-| # | Feature | Entry point |
-|---|---|---|
-| 1 | **Safety Check-In** | Safety tab → countdown timer, "I'm Safe" button |
-| 2 | **Hazard Logger** | Hub → Hazards tile → Log Hazard |
-| 3 | **Voice Notes** | Log Sighting → voice recorder field |
-| 4 | **Photo Size Estimation** | Log Sighting → size estimation overlay |
-| 5 | **Phenology Alerts** | Log Sighting → contextual alert banner per species + window |
-| 6 | **Herbicide Checker** | Treatment Entry → "Check herbicide" button |
-| 7 | **Treatment Effectiveness** | Sighting Detail → Record Follow-Up |
-| 8 | **Per-Area Patrol Checklists** | Patrol → checklist toolbar button |
-| 9 | **Pesticide Stock Alerts** | Dashboard → alert banner; Hub → Supplies |
-| 10 | **Equipment Maintenance Log** | Hub → Equipment tile |
-| 11 | **Ranger Status Broadcast** | Day Sync → ranger status list |
-| 12 | **Night Mode (Red Light)** | Settings → Display → Theme |
-
-### New CoreData entities in demov3
-
-- `Equipment` — tracked equipment with service dates and maintenance history
-- `MaintenanceRecord` — individual service events linked to an `Equipment`
-- `SafetyCheckIn` — persisted check-in sessions for the Safety tab
-- `HazardLog` — GPS-tagged hazard records with type, severity, and photo
-
----
-
 ## Running the Demo Build
 
 1. Checkout the `demov3` branch (or `demov2` for the base feature set)
