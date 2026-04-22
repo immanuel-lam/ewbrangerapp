@@ -17,6 +17,8 @@ final class LogSightingViewModel: ObservableObject {
     @Published var biocontrolObservation: BiocontrolObservation = .notChecked
     /// Area estimate produced by SizeEstimationOverlay (Feature 11), e.g. "~4.2 m²"
     @Published var infestationAreaEstimate: String? = nil
+    /// File path to a recorded voice note (set by VoiceNoteRecorder before save)
+    @Published var voiceNotePath: String? = nil
 
     enum BiocontrolObservation: String, CaseIterable {
         case notChecked, observed, notObserved, unsure
@@ -97,11 +99,16 @@ final class LogSightingViewModel: ObservableObject {
                 photoFilenames: photoFilenames,
                 rangerID: rangerID
             )
-            // Persist area estimate on the CoreData entity
-            if let area = infestationAreaEstimate,
+            // Persist area estimate and voice note path on the CoreData entity
+            if infestationAreaEstimate != nil || voiceNotePath != nil,
                let ctx = sighting.managedObjectContext {
                 ctx.performAndWait {
-                    sighting.infestationAreaEstimate = area
+                    if let area = infestationAreaEstimate {
+                        sighting.infestationAreaEstimate = area
+                    }
+                    if let path = voiceNotePath {
+                        sighting.voiceNotePath = path
+                    }
                     try? ctx.save()
                 }
             }

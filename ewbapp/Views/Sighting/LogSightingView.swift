@@ -13,6 +13,8 @@ struct LogSightingView: View {
         ))
     }
 
+    @State private var voiceNotePath: String? = nil
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -53,6 +55,8 @@ struct LogSightingView: View {
                             )
                     }
 
+                    VoiceNoteRecorder(audioFilePath: $voiceNotePath)
+
                     if let error = viewModel.saveError {
                         Text(error)
                             .font(DSFont.callout)
@@ -63,6 +67,7 @@ struct LogSightingView: View {
                         title: "Save Sighting",
                         action: {
                             Task {
+                                viewModel.voiceNotePath = voiceNotePath
                                 await viewModel.save()
                                 if viewModel.didSave { dismiss() }
                             }
