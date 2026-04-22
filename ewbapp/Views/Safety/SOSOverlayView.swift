@@ -117,7 +117,7 @@ struct SOSOverlayView: View {
             // Labels
             VStack(spacing: DSSpace.sm) {
                 Text("Check-In Missed")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .tracking(0.5)
                 Text("Your safety timer has expired")
@@ -165,7 +165,7 @@ struct SOSOverlayView: View {
             // Ranger identity
             VStack(spacing: DSSpace.xs) {
                 Text(rangerName)
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(DSFont.largeTitle)
                     .foregroundStyle(.white)
                 Text("missed their safety check-in")
                     .font(DSFont.callout)
@@ -185,7 +185,7 @@ struct SOSOverlayView: View {
         VStack(spacing: DSSpace.md) {
             // Ranger label (compact)
             Text(rangerName)
-                .font(.system(size: 20, weight: .black, design: .rounded))
+                .font(DSFont.title)
                 .foregroundStyle(.white)
 
             // Big Find My arrow — takes centre stage
@@ -194,7 +194,7 @@ struct SOSOverlayView: View {
             // Distance readout — large, below arrow
             HStack(alignment: .lastTextBaseline, spacing: 6) {
                 Text(safetyVM.sosDistanceDisplay)
-                    .font(.system(size: 44, weight: .black, design: .monospaced))
+                    .font(.system(size: 44, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.4), value: safetyVM.sosDistanceDisplay)
@@ -337,11 +337,11 @@ struct SOSOverlayView: View {
     private func gpsRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .foregroundStyle(Color.white.opacity(0.45))
                 .frame(width: 28, alignment: .leading)
             Text(value)
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .font(DSFont.mono)
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.5), value: value)
@@ -361,7 +361,7 @@ struct SOSOverlayView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Color.white.opacity(0.7))
             Text(safetyVM.sosDistanceDisplay)
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .font(.system(size: 15, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.4), value: safetyVM.sosDistanceDisplay)
@@ -384,7 +384,7 @@ struct SOSOverlayView: View {
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.white)
             Text(label)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(DSFont.badge)
                 .foregroundStyle(.white)
                 .tracking(1.5)
         }
@@ -437,7 +437,7 @@ struct SOSOverlayView: View {
         Button(action: action) {
             HStack(spacing: DSSpace.sm) {
                 Image(systemName: icon)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                 Text(label)
                     .font(DSFont.subhead)
             }

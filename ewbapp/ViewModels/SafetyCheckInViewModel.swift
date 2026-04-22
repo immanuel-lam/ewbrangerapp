@@ -209,9 +209,9 @@ final class SafetyCheckInViewModel: ObservableObject {
                     return
                 }
                 // Step size proportional to distance — big steps far out, tiny steps up close
-                let maxStep = min(18.0, self.sosDistanceMeters * 0.22)
-                let minStep = max(1.0, self.sosDistanceMeters * 0.06)
-                let step = Double.random(in: minStep...maxStep)
+                // Take 10–45% of remaining distance each tick — always a valid range
+                let pct = Double.random(in: 0.10...0.45)
+                let step = self.sosDistanceMeters * pct
                 self.sosDistanceMeters = max(0, self.sosDistanceMeters - step)
 
                 // GPS drift — starts large, tightens as we close in (signal getting clearer)
