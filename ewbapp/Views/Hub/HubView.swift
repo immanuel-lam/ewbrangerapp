@@ -38,11 +38,14 @@ struct HubView: View {
                         HubTile(title: "Zones", subtitle: "Manage areas",
                                 icon: "square.dashed", accent: Color(hex: "7B5EA8"), index: 3,
                                 appeared: tilesAppeared) { ZoneListView() }
+                        HubTile(title: "Hazards", subtitle: "Incidents & alerts",
+                                icon: "exclamationmark.triangle.fill", accent: Color(hex: "C94040"), index: 4,
+                                appeared: tilesAppeared) { HazardLogView() }
                         HubTile(title: "Cloud Sync", subtitle: "Supabase · S3",
-                                icon: "cloud.fill", accent: Color(hex: "3ECF8E"), index: 4,
+                                icon: "cloud.fill", accent: Color(hex: "3ECF8E"), index: 5,
                                 appeared: tilesAppeared) { DemoLiveSyncView() }
                         HubTile(title: "Handover", subtitle: "End of shift report",
-                                icon: "doc.text.fill", accent: Color(hex: "8B5E3C"), index: 5,
+                                icon: "doc.text.fill", accent: Color(hex: "8B5E3C"), index: 6,
                                 appeared: tilesAppeared) { ShiftHandoverView() }
                     }
                     .padding(.horizontal, DSSpace.lg)
