@@ -8,11 +8,18 @@ struct ZoneConflict: Identifiable {
     let myVersion: ConflictVersion
     let peerVersion: ConflictVersion
     var resolution: ConflictResolution?
+    var mergePreview: ConflictResolver.ZoneMergePreview?
 
     struct ConflictVersion {
         let rangerName: String
-        let timeAgo: String
+        let editedAt: Date
         let areaM2: Int
+
+        var timeAgo: String {
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            return formatter.localizedString(for: editedAt, relativeTo: Date())
+        }
     }
 
     enum ConflictResolution {
@@ -28,43 +35,46 @@ struct ZoneConflict: Identifiable {
             zoneName: "Southern Scrub Belt",
             myVersion: ConflictVersion(
                 rangerName: "Alice",
-                timeAgo: "2 hours ago",
+                editedAt: Date().addingTimeInterval(-2 * 60 * 60),
                 areaM2: 24500
             ),
             peerVersion: ConflictVersion(
                 rangerName: "Bob",
-                timeAgo: "45 minutes ago",
+                editedAt: Date().addingTimeInterval(-45 * 60),
                 areaM2: 24620
             ),
-            resolution: nil
+            resolution: nil,
+            mergePreview: nil
         ),
         ZoneConflict(
             zoneName: "Creek Line East",
             myVersion: ConflictVersion(
                 rangerName: "Carol",
-                timeAgo: "yesterday",
+                editedAt: Date().addingTimeInterval(-26 * 60 * 60),
                 areaM2: 18300
             ),
             peerVersion: ConflictVersion(
                 rangerName: "Alice",
-                timeAgo: "3 hours ago",
+                editedAt: Date().addingTimeInterval(-3 * 60 * 60),
                 areaM2: 18420
             ),
-            resolution: nil
+            resolution: nil,
+            mergePreview: nil
         ),
         ZoneConflict(
             zoneName: "Riparian Buffer",
             myVersion: ConflictVersion(
                 rangerName: "Bob",
-                timeAgo: "6 hours ago",
+                editedAt: Date().addingTimeInterval(-6 * 60 * 60),
                 areaM2: 31200
             ),
             peerVersion: ConflictVersion(
                 rangerName: "Carol",
-                timeAgo: "2 hours ago",
+                editedAt: Date().addingTimeInterval(-2 * 60 * 60),
                 areaM2: 31100
             ),
-            resolution: nil
+            resolution: nil,
+            mergePreview: nil
         )
     ]
 }
@@ -73,7 +83,6 @@ struct ZoneConflict: Identifiable {
 
 struct ConflictResolverView: View {
     @State private var conflicts: [ZoneConflict] = ZoneConflict.demoConflicts
-    @State private var showMergeToast = false
 
     private var unresolvedCount: Int {
         conflicts.filter { $0.resolution == nil }.count
@@ -132,7 +141,7 @@ struct ConflictResolverView: View {
                 ScrollView {
                     VStack(spacing: DSSpace.md) {
                         ForEach($conflicts) { $conflict in
-                            ConflictCard(conflict: $conflict, onMergeTapped: { showMergeToast = true })
+                            ConflictCard(conflict: $conflict)
                         }
                     }
                 }
@@ -140,31 +149,6 @@ struct ConflictResolverView: View {
                 Spacer()
             }
             .padding(DSSpace.lg)
-
-            // Merge toast
-            if showMergeToast {
-                VStack {
-                    Spacer()
-                    HStack(spacing: DSSpace.sm) {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundStyle(Color.dsPrimary)
-                        Text("Merge strategy coming in next release")
-                            .font(DSFont.callout)
-                            .foregroundStyle(Color.dsInk)
-                        Spacer()
-                    }
-                    .padding(DSSpace.md)
-                    .background(Color.dsPrimary.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
-                    .padding(DSSpace.lg)
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                        withAnimation { showMergeToast = false }
-                    }
-                }
-            }
         }
         .navigationTitle("Zone Conflicts")
         .navigationBarTitleDisplayMode(.inline)
@@ -175,7 +159,6 @@ struct ConflictResolverView: View {
 
 private struct ConflictCard: View {
     @Binding var conflict: ZoneConflict
-    let onMergeTapped: () -> Void
 
     var body: some View {
         if let resolution = conflict.resolution {
@@ -188,9 +171,15 @@ private struct ConflictCard: View {
                     Text("Resolved: \(conflict.zoneName)")
                         .font(DSFont.subhead)
                         .foregroundStyle(Color.dsInk)
-                    Text("Kept \(resolutionLabel(resolution))'s version")
-                        .font(DSFont.caption)
-                        .foregroundStyle(Color.dsInk3)
+                    if resolution == .merged, let mergePreview = conflict.mergePreview {
+                        Text("Merged draft: \(mergePreview.baseRangerName)'s newest boundary · \(formattedArea(mergePreview.mergedAreaM2))")
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
+                    } else {
+                        Text("Kept \(resolutionLabel(resolution))'s version")
+                            .font(DSFont.caption)
+                            .foregroundStyle(Color.dsInk3)
+                    }
                 }
 
                 Spacer()
@@ -267,7 +256,22 @@ private struct ConflictCard: View {
                         }
 
                         Button {
-                            onMergeTapped()
+                            let preview = ConflictResolver.previewZoneMerge(
+                                mine: ConflictResolver.ZoneBoundaryVersion(
+                                    rangerName: conflict.myVersion.rangerName,
+                                    editedAt: conflict.myVersion.editedAt,
+                                    areaM2: conflict.myVersion.areaM2
+                                ),
+                                theirs: ConflictResolver.ZoneBoundaryVersion(
+                                    rangerName: conflict.peerVersion.rangerName,
+                                    editedAt: conflict.peerVersion.editedAt,
+                                    areaM2: conflict.peerVersion.areaM2
+                                )
+                            )
+                            withAnimation {
+                                conflict.mergePreview = preview
+                                conflict.resolution = .merged
+                            }
                         } label: {
                             HStack {
                                 Image(systemName: "arrow.merge")
@@ -283,6 +287,10 @@ private struct ConflictCard: View {
                         }
                     }
                 }
+
+                if let mergePreview = conflict.mergePreview {
+                    mergePreviewView(mergePreview)
+                }
             }
             .padding(DSSpace.md)
             .dsCard(padding: 0)
@@ -296,6 +304,36 @@ private struct ConflictCard: View {
         case .keptTheirs: return "their"
         case .merged: return "merged"
         }
+    }
+
+    private func formattedArea(_ areaM2: Int) -> String {
+        "\(areaM2.formatted()) m²"
+    }
+
+    @ViewBuilder
+    private func mergePreviewView(_ preview: ConflictResolver.ZoneMergePreview) -> some View {
+        VStack(alignment: .leading, spacing: DSSpace.xs) {
+            HStack(spacing: DSSpace.sm) {
+                Image(systemName: "square.stack.3d.up.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.dsPrimary)
+                Text("Merge draft")
+                    .font(DSFont.badge)
+                    .foregroundStyle(Color.dsPrimary)
+            }
+
+            Text("\(preview.baseRangerName)'s newest boundary is the base draft. Merged review area: \(formattedArea(preview.mergedAreaM2)).")
+                .font(DSFont.callout)
+                .foregroundStyle(Color.dsInk2)
+
+            Text(preview.reviewNote)
+                .font(DSFont.caption)
+                .foregroundStyle(Color.dsInk3)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DSSpace.md)
+        .background(Color.dsPrimarySoft)
+        .clipShape(RoundedRectangle(cornerRadius: DSRadius.sm, style: .continuous))
     }
 }
 

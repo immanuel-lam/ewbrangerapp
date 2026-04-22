@@ -77,4 +77,46 @@ final class ConflictResolverTests: XCTestCase {
         XCTAssertTrue(result, "Incoming should win on equal timestamps (deterministic tiebreaker)")
         XCTAssertTrue(applyCalled)
     }
+
+    func testZoneMergePrefersNewestBoundaryAsBase() {
+        let mine = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Alice",
+            editedAt: Date().addingTimeInterval(-3600),
+            areaM2: 24500
+        )
+        let theirs = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Bob",
+            editedAt: Date(),
+            areaM2: 24620
+        )
+
+        let preview = ConflictResolver.previewZoneMerge(mine: mine, theirs: theirs)
+
+        XCTAssertEqual(preview.baseVersion, .theirs)
+        XCTAssertEqual(preview.baseRangerName, "Bob")
+        XCTAssertEqual(preview.comparedRangerName, "Alice")
+        XCTAssertEqual(preview.mergedAreaM2, 24620)
+        XCTAssertEqual(preview.areaDeltaM2, 120)
+    }
+
+    func testZoneMergeUsesMineOnEqualTimestamp() {
+        let sharedDate = Date()
+        let mine = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Alice",
+            editedAt: sharedDate,
+            areaM2: 18300
+        )
+        let theirs = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Bob",
+            editedAt: sharedDate,
+            areaM2: 18420
+        )
+
+        let preview = ConflictResolver.previewZoneMerge(mine: mine, theirs: theirs)
+
+        XCTAssertEqual(preview.baseVersion, .mine)
+        XCTAssertEqual(preview.baseRangerName, "Alice")
+        XCTAssertEqual(preview.mergedAreaM2, 18420)
+        XCTAssertEqual(preview.areaDeltaM2, 120)
+    }
 }

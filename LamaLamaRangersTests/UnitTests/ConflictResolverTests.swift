@@ -62,4 +62,24 @@ final class ConflictResolverTests: XCTestCase {
         XCTAssertTrue(photos.contains("server_photo.jpg"))
         XCTAssertTrue(photos.contains("local_photo.jpg"))
     }
+
+    func testZoneMergePrefersNewestBoundaryAsBase() {
+        let mine = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Alice",
+            editedAt: Date().addingTimeInterval(-3600),
+            areaM2: 24500
+        )
+        let theirs = ConflictResolver.ZoneBoundaryVersion(
+            rangerName: "Bob",
+            editedAt: Date(),
+            areaM2: 24620
+        )
+
+        let preview = ConflictResolver.previewZoneMerge(mine: mine, theirs: theirs)
+
+        XCTAssertEqual(preview.baseVersion, .theirs)
+        XCTAssertEqual(preview.baseRangerName, "Bob")
+        XCTAssertEqual(preview.mergedAreaM2, 24620)
+        XCTAssertEqual(preview.areaDeltaM2, 120)
+    }
 }
