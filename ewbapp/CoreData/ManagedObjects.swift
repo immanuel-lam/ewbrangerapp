@@ -173,7 +173,31 @@ public class RangerTask: NSManagedObject {
 
 extension RangerTask: Identifiable {}
 
+// MARK: - HazardLog
+
+@objc(HazardLog)
+public class HazardLog: NSManagedObject {
+    @NSManaged public var id: UUID?
+    @NSManaged public var timestamp: Date?
+    @NSManaged public var title: String?
+    @NSManaged public var hazardType: String?
+    @NSManaged public var severity: String?
+    @NSManaged public var notes: String?
+    @NSManaged public var latitude: Double
+    @NSManaged public var longitude: Double
+    @NSManaged public var photoPath: String?
+    @NSManaged public var syncedToCloud: Bool
+}
+
+extension HazardLog: Identifiable {}
+
 // MARK: - NSFetchRequest convenience
+
+extension HazardLog {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<HazardLog> {
+        return NSFetchRequest<HazardLog>(entityName: "HazardLog")
+    }
+}
 
 extension InfestationZone {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<InfestationZone> {
